@@ -60,7 +60,7 @@ end
 r .= r ./ AU                                            # scale for plotting
 size(r)[1]
 #plot
-plot(xlabel = "AU", ylabel = "AU")
+plot(xlabel = "AU", ylabel = "AU",xlims=(-110, 110), ylims=(-120, 140))
 scatter!([0],[0],label = "sun") # fügen das Sonnensymbol (Kreis mit Loch)
 [plot!(r[i][:,1], r[i][:,2],label = false) for i in 1:size(r)[1]]
 θ = LinRange(0 , 2*π , 100)
