@@ -15,22 +15,14 @@ phi = 0
 tspan = (0.0,40*yr)                                    # time span (start, end)
 dt = 1*day                                              # equidistant time step
 no_of_trajectories = 10
-#s0  = [r_heliosphere * sin(theta)*cos(phi),r_heliosphere * sin(theta)*sin(phi), r_heliosphere * cos(theta),0,-v0,0]
+
 s0 = [-r_heliosphere+2*r_heliosphere,r_heliosphere,0,0,-v0,0]
 
 #different entrypoints in heliosphere, acess via s0[:,i] for i 1:no_of_trajectories (0 kein gültiger index)]
-#=for i in 1 : no_of_trajectories
-    local phi =i / no_of_trajectories * pi
-    if phi == pi/2
-        continue                                        #skipp trajectory that would hit the sun
-    end
-    s = [r_heliosphere * sin(theta)*cos(phi),r_heliosphere * sin(theta)*sin(phi),r_heliosphere * cos(theta),0,-v0,0]
-    global s0 = hcat(s0, s)
-end=#
 
 for i in 1 : no_of_trajectories
     for j in 0 : no_of_trajectories    
-        s = [-r_heliosphere+2*r_heliosphere*i/no_of_trajectories,r_heliosphere,-r_heliosphere+2*r_heliosphere*j/no_of_trajectories,0,-v0,0]
+        local s = [-r_heliosphere+2*r_heliosphere*i/no_of_trajectories,r_heliosphere,-r_heliosphere+2*r_heliosphere*j/no_of_trajectories,0,-v0,0]
         global s0 = hcat(s0, s)
     end
 end
@@ -48,6 +40,30 @@ function grav_srp(r,be)
     return - GM / dist^3 * r + be * GM / dist^3 * r
 end
 
+function magnetic_field(r_vec)
+    # Konstanten
+    B0 = 5e-9        # nT, interstellare Magnetfeldstärke bei 1 AU
+    L = AU          # Längenskala, AU
+    omega = 2*pi/(25.7*24*60*60)   # rad/s, Sonnenrotationsrate
+
+
+    # Umwandlung in zylindrische Koordinaten
+    local x, y, z = r_vec[1], r_vec[2], r_vec[3]
+    local r = sqrt(x^2 + y^2 + z^2)
+    local θ, φ =  acos(z/r), atan(y, x)
+    v_r_solar = 400 *1000 #solar wind speed in m/s
+    
+    # Berechnen Sie die Parker-Spirale Magnetfeldkomponenten
+    B_r = B0 * (r/L)^(-2)
+    B_phi = -B0 * omega * L^2 *sin((θ))/(v_r_solar*r)
+    B_theta = 0.0
+    
+    # Umwandlung zurück in kartesische Koordinaten
+    B_x, = B_r * sin(θ) * cos(φ) + B_theta * cos(θ) * cos(φ) - B_phi * sin(φ)
+    B_y = B_r * sin(θ) * sin(φ) + B_theta * cos(θ) * sin(φ) + B_phi * cos(φ)
+    B_z = B_r * cos(θ) - B_theta * sin(θ)
+    return [B_x, B_y, B_z]
+end
 
 function condition(dist,t,integrator) 
     s = integrator.u
