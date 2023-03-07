@@ -1,13 +1,8 @@
 using Plots
-using DifferentialEquations
 
 #used The Heliospheric Magnetic Field Mathew J. Owens(2013), Heliospheric Magnetic Field and The Parker Model N. S. Svirzhevsky(2021)
 
-const GM = 1.327e20::Float64                            # G * M_sol [m^3 / s^2]
 const AU = 1.496e11::Float64                            # 1AU [m]
-const yr = 3.154e7::Float64                             # 1yr [s]
-const day = 24.0 * 60.0 * 60.0::Float64                 # 1d [s]
-const r_heliosphere = 100*AU                            # radius heliosphere [m]
 
 # Definieren Sie die magnetische Feldfunktion
 function magnetic_field(r_vec)
@@ -35,12 +30,14 @@ function magnetic_field(r_vec)
     return [B_x, B_y, B_z]
 end
 
+
 xmin, xmax = -10*AU, 10*AU
 ymin, ymax = -10*AU, 10*AU
 
 # Erstellen eines Gitters von Koordinaten im Raum
 xgrid = range(xmin, xmax, length=20)
 ygrid = range(ymin, ymax, length=20)
+
 grid=[[x,y] for x in xgrid for y in ygrid]
 X,Y = getindex.(grid, 1),getindex.(grid, 2)
 

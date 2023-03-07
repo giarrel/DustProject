@@ -1,4 +1,5 @@
 using DifferentialEquations
+using LinearAlgebra
 using Plots
 
 
@@ -29,9 +30,9 @@ end
 
 
 # Write the function (differential equation)
-function EqOfMotion(ds, s, p, t, b=10)
+function EqOfMotion(ds, s, p, t, b=10,qm=1)
     ds[1:3] = s[4:6]                                    # derivative of position = velocity
-    ds[4:6] = grav_srp(s[1:3],b)                        # derivative of velocity = acceleration
+    ds[4:6] = grav_srp(s[1:3],b) +  lorenzf(qm,s[4:6],magnetic_field(s[1:3]))                    # derivative of velocity = acceleration
 end
 
 # Compute gravitational acceleration, Compute solar radiation pressure acceleration
@@ -39,6 +40,11 @@ function grav_srp(r,be)
     dist = sqrt(r[1]^2 + r[2]^2 + r[3]^2)
     return - GM / dist^3 * r + be * GM / dist^3 * r
 end
+
+function lorenzf(qm,v,B)
+    return qm*cross(v,B)
+end
+
 
 function magnetic_field(r_vec)
     # Konstanten
