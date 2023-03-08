@@ -1,4 +1,6 @@
 using Plots
+#using CairoMakie
+using LinearAlgebra
 
 #used The Heliospheric Magnetic Field Mathew J. Owens(2013), Heliospheric Magnetic Field and The Parker Model N. S. Svirzhevsky(2021)
 
@@ -18,9 +20,9 @@ function magnetic_field(r_vec)
     local θ, φ =  acos(z/r), atan(y, x)
     v_r_solar = 400 *1000 #solar wind speed in m/s
     
-    # Berechnen Sie die Parker-Spirale Magnetfeldkomponenten
-    B_r = B0 * (r/L)^(-2)
-    B_phi = -B0 * omega * L^2 *sin((θ))/(v_r_solar*r)
+    # Berechnen Sie die Parker-Spirale Magnetfeldkomponenten neu: cos(teta) eingefügt nach parkers paper
+    B_r = B0 * (r/L)^(-2) #* cos(θ)
+    B_phi = -B0 * omega * L^2 *sin((θ))/(v_r_solar*r) #* cos(θ)
     B_theta = 0.0
     
     # Umwandlung zurück in kartesische Koordinaten
@@ -41,10 +43,15 @@ ygrid = range(ymin, ymax, length=20)
 grid=[[x,y] for x in xgrid for y in ygrid]
 X,Y = getindex.(grid, 1),getindex.(grid, 2)
 
-B = [500000000*magnetic_field([x,y,0])[1:2] for x in xgrid for y in ygrid]
+B = [magnetic_field([x,y,0])[1:2] for x in xgrid for y in ygrid]
 Bx=getindex.(B, 1)
 By=getindex.(B, 2)
 
+#f(x,y)=Point2f(magnetic_field([x,y,0])[1:2])
+#norm(f(10*AU,0))
 
 plot(size=(400,400),xlims=(-10,10),ylims=(-10,10))
-quiver!(X/AU,Y/AU,quiver=(Bx,By),arrow=:closed)
+quiver!(X/AU,Y/AU,quiver=(Bx,By))
+#p=streamplot(f,xmin..xmax,ymin..ymax)
+
+#display(p)

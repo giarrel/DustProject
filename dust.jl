@@ -13,9 +13,9 @@ theta = pi/2
 phi = 0
 
 # parameters
-tspan = (0.0,40*yr)                                    # time span (start, end)
+tspan = (0.0,60*yr)                                    # time span (start, end)
 dt = 1*day                                              # equidistant time step
-no_of_trajectories = 10
+no_of_trajectories = 10                                #sqrt of no of traj
 
 s0 = [-r_heliosphere+2*r_heliosphere,r_heliosphere,0,0,-v0,0]
 
@@ -30,9 +30,10 @@ end
 
 
 # Write the function (differential equation)
-function EqOfMotion(ds, s, p, t, b=10,qm=1)
+function EqOfMotion(ds, s, p, t, b=0,qm=10)
     ds[1:3] = s[4:6]                                    # derivative of position = velocity
     ds[4:6] = grav_srp(s[1:3],b) +  lorenzf(qm,s[4:6],magnetic_field(s[1:3]))                    # derivative of velocity = acceleration
+    #ds[4:6] = lorenzf(qm,s[4:6],magnetic_field(s[1:3])) #just to test what lorenzforce does
 end
 
 # Compute gravitational acceleration, Compute solar radiation pressure acceleration
