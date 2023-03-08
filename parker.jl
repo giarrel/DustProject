@@ -6,7 +6,7 @@ using LinearAlgebra
 
 const AU = 1.496e11::Float64                            # 1AU [m]
 
-# Definieren Sie die magnetische Feldfunktion
+# Definieren Sie die magnetische Feldfunktion der Parker Spirale
 function magnetic_field(r_vec)
     # Konstanten
     B0 = 5e-9        # nT, interstellare Magnetfeldstärke bei 1 AU
