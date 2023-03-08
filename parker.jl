@@ -36,22 +36,20 @@ end
 xmin, xmax = -10*AU, 10*AU
 ymin, ymax = -10*AU, 10*AU
 
-# Erstellen eines Gitters von Koordinaten im Raum
-xgrid = range(xmin, xmax, length=20)
-ygrid = range(ymin, ymax, length=20)
+# Erstellen eines Gitters von Koordinaten im Raum, mit entsprechenen magnetfeld werten
+xgrid, ygrid = range(xmin, xmax, length=20), range(ymin, ymax, length=20)
 
-grid=[[x,y] for x in xgrid for y in ygrid]
-X,Y = getindex.(grid, 1),getindex.(grid, 2)
+grid=[[x,y] for x in xgrid for y in ygrid] #vektor länge lenth *length mit einträgen [x,y] aus allen x y kombinationen möglichkeiten
+X,Y = getindex.(grid, 1),getindex.(grid, 2) #erste einträge von vektor in vektor, zweite einträge von vektor in vektor
 
-B = [magnetic_field([x,y,0])[1:2] for x in xgrid for y in ygrid]
-Bx=getindex.(B, 1)
-By=getindex.(B, 2)
+B = [magnetic_field([x,y,0])[1:2] for x in xgrid for y in ygrid]#analog zu grid
+Bx,By=getindex.(B, 1),getindex.(B, 2)#analog zu X,Y
+
 
 #f(x,y)=Point2f(magnetic_field([x,y,0])[1:2])
 #norm(f(10*AU,0))
 
 plot(size=(400,400),xlims=(-10,10),ylims=(-10,10))
-quiver!(X/AU,Y/AU,quiver=(Bx,By))
+quiver!(X/AU,Y/AU,quiver=(Bx,By)) #plot(X/AU,Y/AU) mit pfeilen (Bx,By)  (geht nur 2d)
 #p=streamplot(f,xmin..xmax,ymin..ymax)
-
 #display(p)
