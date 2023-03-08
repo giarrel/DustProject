@@ -85,9 +85,6 @@ cb = DiscreteCallback(condition,affect!) # Erstellen Sie den Callback
 
 
 #solve for r
-size(s0, 2)
-axes(s0,2)
-axes(sol)[1]
 
 prob = [ODEProblem(EqOfMotion, s0[:,i], tspan) for i in axes(s0,2)]                # ODE Problem
 sol = [solve(prob[i], RK4(), adaptive=:false, dt = dt,callback=cb) for i in axes(prob, 1)]      # solve the problem
