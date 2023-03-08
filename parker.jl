@@ -7,22 +7,22 @@ using LinearAlgebra
 const AU = 1.496e11::Float64                            # 1AU [m]
 
 # Definieren Sie die magnetische Feldfunktion der Parker Spirale
-function magnetic_field(r_vec)
+function magnetic_field(r_vec, t)
     # Konstanten
     B0 = 5e-9        # nT, interstellare Magnetfeldstärke bei 1 AU
     L = AU          # Längenskala, AU
-    omega = 2*pi/(25.7*24*60*60)   # rad/s, Sonnenrotationsrate sun_r=696’340 km
+    omega = 2.7e-6   # rad/s, Sonnenrotationsrate nach parkers paper oder 2π/(25.7*24*60*60)?
 
 
     # Umwandlung in zylindrische Koordinaten
-    local x, y, z = r_vec[1], r_vec[2], r_vec[3]
-    local r = sqrt(x^2 + y^2 + z^2)
-    local θ, φ =  acos(z/r), atan(y, x)
-    v_r_solar = 400 *1000 #solar wind speed in m/s
+    x, y, z = r_vec[1], r_vec[2], r_vec[3]
+    r = sqrt(x^2 + y^2 + z^2)
+    θ, φ =  acos(z/r), atan(y, x)+ omega*t
+    v_r_solar = 400e3 #solar wind speed in m/s
     
     # Berechnen Sie die Parker-Spirale Magnetfeldkomponenten neu: cos(teta) eingefügt nach parkers paper
     B_r = B0 * (r/L)^(-2) #* cos(θ)
-    B_phi = -B0 * omega * L^2 *sin((θ))/(v_r_solar*r) #* cos(θ)
+    B_phi = -B0 * omega * L^2 * sin(θ)/(v_r_solar*r) #* cos(θ)
     B_theta = 0.0
     
     # Umwandlung zurück in kartesische Koordinaten
@@ -31,7 +31,6 @@ function magnetic_field(r_vec)
     B_z = B_r * cos(θ) - B_theta * sin(θ)
     return [B_x, B_y, B_z]
 end
-
 
 xmin, xmax = -10*AU, 10*AU
 ymin, ymax = -10*AU, 10*AU
@@ -42,7 +41,7 @@ xgrid, ygrid = range(xmin, xmax, length=20), range(ymin, ymax, length=20)
 grid=[[x,y] for x in xgrid for y in ygrid] #vektor länge lenth *length mit einträgen [x,y] aus allen x y kombinationen möglichkeiten
 X,Y = getindex.(grid, 1),getindex.(grid, 2) #erste einträge von vektor in vektor, zweite einträge von vektor in vektor
 
-B = [10e8*magnetic_field([x,y,0])[1:2] for x in xgrid for y in ygrid]#analog zu grid
+B = [1e9*magnetic_field([x,y,0],1/2)[1:2] for x in xgrid for y in ygrid]#analog zu grid
 Bx,By=getindex.(B, 1),getindex.(B, 2)#analog zu X,Y
 
 
@@ -55,3 +54,5 @@ xlabel!("AU")
 ylabel!("AU")
 #p=streamplot(f,xmin..xmax,ymin..ymax)
 #display(p)
+norm(magnetic_field([AU,0,0],0))
+
