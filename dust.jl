@@ -85,10 +85,14 @@ cb = DiscreteCallback(condition,affect!) # Erstellen Sie den Callback
 
 
 #solve for r
-prob = [ODEProblem(EqOfMotion, s0[:,i], tspan) for i in 1:size(s0, 2)]                # ODE Problem
-sol = [solve(prob[i], RK4(), adaptive=:false, dt = dt,callback=cb) for i in 1:size(prob, 1)]      # solve the problem
-r = [Array{Float64}(undef, length(sol[i].t), 3) for i in 1:size(sol)[1]]          # prepare positions
-for j in 1:size(r)[1]
+size(s0, 2)
+axes(s0,2)
+axes(sol)[1]
+
+prob = [ODEProblem(EqOfMotion, s0[:,i], tspan) for i in axes(s0,2)]                # ODE Problem
+sol = [solve(prob[i], RK4(), adaptive=:false, dt = dt,callback=cb) for i in axes(prob, 1)]      # solve the problem
+r = [Array{Float64}(undef, length(sol[i].t), 3) for i in axes(sol)[1]]          # prepare positions
+for j in axes(r)[1]
     for i in eachindex(sol[j].t)                               # get positions
         r[j][i,1] = sol[j].u[i][1]
         r[j][i,2] = sol[j].u[i][2]
@@ -106,8 +110,8 @@ scatter!([0],[0],label = "sun") # fügen das Sonnensymbol (Kreis mit Loch)
 plot!(r_heliosphere./ AU  * cos.(θ),r_heliosphere./ AU  * sin.(θ),size=(400,400),label = "heliosphere",title="ISD Trajectories in 2D")
 #
 # 3D plot
-plot3d(r[1][:,1], r[1][:,2], r[1][:,3],label = false)
-for i in 2:length(r)
+plot3d()
+for i in eachindex(r)
     plot3d!(r[i][:,1], r[i][:,2], r[i][:,3],label = false)
 end
 
