@@ -14,22 +14,22 @@ phi = 0
 
 # parameters
 tspan = (0.0,60*yr)                                    # time span (start, end)
-no_of_trajectories = 10                                #sqrt of no of traj
+no_of_trajectories = [4,4]                                #sqrt of no of traj
 
-s0 = [-r_heliosphere+2*r_heliosphere,r_heliosphere,0,0,-v0,0]
+s0 = [0,r_heliosphere,0,0,-v0,0]
 
 #different entrypoints in heliosphere, acess via s0[:,i] for i 1:no_of_trajectories (0 kein gültiger index)]
 
-for i in 1 : no_of_trajectories
-    for j in 0 : no_of_trajectories    
-        local s = [-r_heliosphere+2*r_heliosphere*i/no_of_trajectories,r_heliosphere,-r_heliosphere+2*r_heliosphere*j/no_of_trajectories,0,-v0,0]
+for i in 0 : no_of_trajectories[1]
+    for j in 0 : no_of_trajectories[2]    
+        local s = [-r_heliosphere+2*r_heliosphere*i/no_of_trajectories[1],r_heliosphere,-r_heliosphere+2*r_heliosphere*j/no_of_trajectories[2],0,-v0,0]
         global s0 = hcat(s0, s)
     end
 end
 
 
 # Write the function (differential equation)
-function EqOfMotion(ds, s, p, t, b=0,qm=10)
+function EqOfMotion(ds, s, p, t, b=0,qm=20)
     ds[1:3] = s[4:6]                                    # derivative of position = velocity
     ds[4:6] = grav_srp(s[1:3],b) +  lorenzf(qm,s[4:6],magnetic_field(s[1:3]))                    # derivative of velocity = acceleration
     #ds[4:6] = lorenzf(qm,s[4:6],magnetic_field(s[1:3])) #just to test what lorenzforce does
@@ -73,18 +73,6 @@ function magnetic_field(r_vec, t = 0)
     return [B_x, B_y, B_z]
 end
 
-function condition(dist,t,integrator) 
-    s = integrator.u
-    dist = sqrt(s[1]^2 + s[2]^2 + s[3]^2) # Die Entfernung vom Ursprung 
-    dist <0.1*AU # Die Bedingung für das Stoppen end
-end
-function affect!(integrator)
-    terminate!(integrator) # Die Aktion für das Stoppen
-end
-
-cb = DiscreteCallback(condition,affect!) # Erstellen Sie den Callback
-
-
 #solve for r
 
 prob = [ODEProblem(EqOfMotion, s0[:,i], tspan) for i in axes(s0,2)]                # ODE Problem
@@ -97,24 +85,41 @@ for j in axes(r)[1]
         r[j][i,3] = sol[j].u[i][3]
     end
 end
-  
-r .= r ./ AU                                            # scale for plotting
 
-#plot2d
-plot(xlabel = "AU", ylabel = "AU",xlims=(-110, 110), ylims=(-120, 140))
-scatter!([0],[0],label = "sun") # fügen das Sonnensymbol (Kreis mit Loch)
-[plot!(r[i][:,1], r[i][:,2],label = false) for i in 1:size(r)[1]]
-θ = LinRange(0 , 2*π , 100)
-plot!(r_heliosphere./ AU  * cos.(θ),r_heliosphere./ AU  * sin.(θ),size=(400,400),label = "heliosphere",title="ISD Trajectories in 2D")
-
-# 3D plot
-plot3d()
-for i in eachindex(r)
-    plot3d!(r[i][:,1], r[i][:,2], r[i][:,3],label = false)
+#callback stuff to end trajectory that hits the sun
+function condition(dist,t,integrator) 
+    s = integrator.u
+    dist = sqrt(s[1]^2 + s[2]^2 + s[3]^2) # Die Entfernung vom Ursprung 
+    dist <0.1*AU # Die Bedingung für das Stoppen end
+end
+function affect!(integrator)
+    terminate!(integrator) # Die Aktion für das Stoppen
 end
 
-scatter3d!([0],[0],[0],label = "sun", markersize=10)
+cb = DiscreteCallback(condition,affect!) # Erstellen Sie den Callback
 
-plot3d!(size=(800,600), xlabel="AU", ylabel="AU", zlabel="AU")
-plot3d!(title="ISD Trajectories in 3D")
-#
+r .= r ./ AU                                            # scale for plotting
+
+#plot2d function
+function twodim()
+    plot(xlabel = "AU", ylabel = "AU",xlims=(-110, 110), ylims=(-120, 140))
+    scatter!([0],[0],label = "sun", color=:yellow) # fügen das Sonnensymbol (Kreis mit Loch)
+    [plot!(r[i][:,1], r[i][:,2],label = false) for i in 1:size(r)[1]]
+    θ = LinRange(0 , 2*π , 100)
+    plot!(r_heliosphere./ AU  * cos.(θ),r_heliosphere./ AU  * sin.(θ),size=(400,400),label = "heliosphere",title="ISD Trajectories in 2D")
+end
+
+# 3D plot function
+function threedim()
+    plot3d()
+    for i in eachindex(r)
+        plot3d!(r[i][:,1], r[i][:,2], r[i][:,3],label = false)
+    end
+    scatter3d!([0],[0],[0],label = "sun", color=:yellow)
+    plot3d!(size=(800,600), xlabel="AU", ylabel="AU", zlabel="AU")
+    plot3d!(title="ISD Trajectories in 3D")
+end
+
+#plots
+twodim()
+threedim()
