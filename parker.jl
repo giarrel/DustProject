@@ -1,5 +1,4 @@
 using Plots
-#using CairoMakie
 using LinearAlgebra
 using DifferentialEquations
 
@@ -36,6 +35,7 @@ end
 
 #magn field lines calculated and plotted from field
 plot3d(xlims=(-100,100),ylims=(-100,100),zlims=(-100,100),size=(800,800,800))
+scatter3d!([0,0,0],[0,0,0],[0,0,0],label="sun", color=:yellow)
 
 function ode_system(du,u,p,t)
     du .= magnetic_field(u) ./ norm(magnetic_field(u))
@@ -62,6 +62,8 @@ magn_field_line(startpoint,timespan)
 
 #=
 #first approach using quiver maybee need later to see how i created a grid
+
+#using CairoMakie
 
 xmin, xmax = -10*AU, 10*AU
 ymin, ymax = -10*AU, 10*AU

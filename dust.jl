@@ -46,28 +46,30 @@ function lorenzf(qm,v,B)
 end
 
 
-function magnetic_field(r_vec)
+# Definieren Sie die magnetische Feldfunktion der Parker Spirale
+function magnetic_field(r_vec, t = 0)
     # Konstanten
     B0 = 5e-9        # nT, interstellare Magnetfeldstärke bei 1 AU
     L = AU          # Längenskala, AU
-    omega = 2*pi/(25.7*24*60*60)   # rad/s, Sonnenrotationsrate
+    omega = 2.7e-6   # rad/s, Sonnenrotationsrate nach parkers paper oder 2π/(25.7*24*60*60)?
 
 
     # Umwandlung in zylindrische Koordinaten
-    local x, y, z = r_vec[1], r_vec[2], r_vec[3]
-    local r = sqrt(x^2 + y^2 + z^2)
-    local θ, φ =  acos(z/r), atan(y, x)
-    v_r_solar = 400 *1000 #solar wind speed in m/s
+    x, y, z = r_vec[1], r_vec[2], r_vec[3]
+    r = sqrt(x^2 + y^2 + z^2)
+    θ, φ =  acos(z/r), atan(y, x)+ omega*t
+    v_r_solar = 400e3 #solar wind speed in m/s
     
     # Berechnen Sie die Parker-Spirale Magnetfeldkomponenten
     B_r = B0 * (r/L)^(-2)
-    B_phi = -B0 * omega * L^2 *sin((θ))/(v_r_solar*r)
+    B_phi = -B0 * omega * L^2 * sin(θ)/(v_r_solar*r)
     B_theta = 0.0
     
     # Umwandlung zurück in kartesische Koordinaten
     B_x, = B_r * sin(θ) * cos(φ) + B_theta * cos(θ) * cos(φ) - B_phi * sin(φ)
     B_y = B_r * sin(θ) * sin(φ) + B_theta * cos(θ) * sin(φ) + B_phi * cos(φ)
     B_z = B_r * cos(θ) - B_theta * sin(θ)
+
     return [B_x, B_y, B_z]
 end
 
@@ -98,13 +100,13 @@ end
   
 r .= r ./ AU                                            # scale for plotting
 
-#plot
+#plot2d
 plot(xlabel = "AU", ylabel = "AU",xlims=(-110, 110), ylims=(-120, 140))
 scatter!([0],[0],label = "sun") # fügen das Sonnensymbol (Kreis mit Loch)
 [plot!(r[i][:,1], r[i][:,2],label = false) for i in 1:size(r)[1]]
 θ = LinRange(0 , 2*π , 100)
 plot!(r_heliosphere./ AU  * cos.(θ),r_heliosphere./ AU  * sin.(θ),size=(400,400),label = "heliosphere",title="ISD Trajectories in 2D")
-#
+
 # 3D plot
 plot3d()
 for i in eachindex(r)
