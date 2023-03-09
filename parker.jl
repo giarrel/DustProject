@@ -21,7 +21,7 @@ function magnetic_field(r_vec, t = 0)
     θ, φ =  acos(z/r), atan(y, x)+ omega*t
     v_r_solar = 400e3 #solar wind speed in m/s
     
-    # Berechnen Sie die Parker-Spirale Magnetfeldkomponenten neu: cos(teta) eingefügt nach parkers paper
+    # Berechnen Sie die Parker-Spirale Magnetfeldkomponenten neu: cos(teta) eingefügt nach parkers paper rauskomentiert wegen nicht sicher
     B_r = B0 * (r/L)^(-2) #* cos(θ)
     B_phi = -B0 * omega * L^2 * sin(θ)/(v_r_solar*r) #* cos(θ)
     B_theta = 0.0
@@ -62,7 +62,8 @@ ylabel!("AU")
 
 #########skipp untill here
 
-#magn field lines calculated from field
+#magn field lines calculated and plotted from field
+plot3d(xlims=(-100,100),ylims=(-100,100),zlims=(-100,100),size=(800,800,800))
 
 function ode_system(du,u,p,t)
     du .= magnetic_field(u) ./ norm(magnetic_field(u))
@@ -74,11 +75,15 @@ function magn_field_line(u0, tspan) #need to solve g' = F(g)
     X = [x[1] for x in sol.u]
     Y = [x[2] for x in sol.u]
     Z = [x[3] for x in sol.u]
-    plot3d(X/AU,Y/AU,Z/AU,label="Parker Spiral",xlims=(-100,100),ylims=(-100,100),zlims=(-100,100),size=(800,600))
+    u0AU=u0./AU
+    plot3d!(X/AU,Y/AU,Z/AU,label="Parker Spiral with starting at $u0AU AU")
     xlabel!("AU")
     ylabel!("AU")
     zlabel!("AU")
     
 end
 
-magn_field_line([AU/10,AU/10,AU/10],(0.0,1e15))
+timespan=(0.0,1e15)
+startpoint=[AU/10,AU/10,0]
+
+magn_field_line(startpoint,timespan)
