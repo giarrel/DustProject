@@ -34,6 +34,9 @@ function magnetic_field(r_vec, t)
     return [B_x, B_y, B_z]
 end
 
+
+#########skipp this if want to plot magnetic field lines
+
 xmin, xmax = -10*AU, 10*AU
 ymin, ymax = -10*AU, 10*AU
 
@@ -57,6 +60,9 @@ ylabel!("AU")
 #p=streamplot(f,xmin..xmax,ymin..ymax)
 #display(p)
 
+#########skipp untill here
+
+#magn field lines calculated from field
 
 function ode_system(du,u,p,t)
     du .= magnetic_field(u, t) ./ norm(magnetic_field(u,t))
