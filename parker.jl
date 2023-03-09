@@ -34,8 +34,34 @@ function magnetic_field(r_vec, t = 0)
     return [B_x, B_y, B_z]
 end
 
+#magn field lines calculated and plotted from field
+plot3d(xlims=(-100,100),ylims=(-100,100),zlims=(-100,100),size=(800,800,800))
 
-#########skipp this if want to plot magnetic field lines
+function ode_system(du,u,p,t)
+    du .= magnetic_field(u) ./ norm(magnetic_field(u))
+end
+
+function magn_field_line(u0, tspan) #need to solve g' = F(g)
+    prob = ODEProblem(ode_system,u0,tspan)
+    sol = solve(prob,dtmax=1e10)
+    X = [x[1] for x in sol.u]
+    Y = [x[2] for x in sol.u]
+    Z = [x[3] for x in sol.u]
+    u0AU=u0./AU
+    plot3d!(X/AU,Y/AU,Z/AU,label="Parker Spiral with starting at $u0AU AU")
+    xlabel!("AU")
+    ylabel!("AU")
+    zlabel!("AU")
+    
+end
+
+timespan=(0.0,1e15)
+startpoint=[AU/10,AU/10,AU/10]
+
+magn_field_line(startpoint,timespan)
+
+#=
+#first approach using quiver maybee need later to see how i created a grid
 
 xmin, xmax = -10*AU, 10*AU
 ymin, ymax = -10*AU, 10*AU
@@ -59,31 +85,4 @@ xlabel!("AU")
 ylabel!("AU")
 #p=streamplot(f,xmin..xmax,ymin..ymax)
 #display(p)
-
-#########skipp untill here
-
-#magn field lines calculated and plotted from field
-plot3d(xlims=(-100,100),ylims=(-100,100),zlims=(-100,100),size=(800,800,800))
-
-function ode_system(du,u,p,t)
-    du .= magnetic_field(u) ./ norm(magnetic_field(u))
-end
-
-function magn_field_line(u0, tspan) #need to solve g' = F(g)
-    prob = ODEProblem(ode_system,u0,tspan)
-    sol = solve(prob,dtmax=1e10)
-    X = [x[1] for x in sol.u]
-    Y = [x[2] for x in sol.u]
-    Z = [x[3] for x in sol.u]
-    u0AU=u0./AU
-    plot3d!(X/AU,Y/AU,Z/AU,label="Parker Spiral with starting at $u0AU AU")
-    xlabel!("AU")
-    ylabel!("AU")
-    zlabel!("AU")
-    
-end
-
-timespan=(0.0,1e15)
-startpoint=[AU/10,AU/10,0]
-
-magn_field_line(startpoint,timespan)
+=#
