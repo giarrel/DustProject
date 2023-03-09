@@ -8,7 +8,7 @@ using DifferentialEquations
 const AU = 1.496e11::Float64                            # 1AU [m]
 
 # Definieren Sie die magnetische Feldfunktion der Parker Spirale
-function magnetic_field(r_vec, t)
+function magnetic_field(r_vec, t = 0)
     # Konstanten
     B0 = 5e-9        # nT, interstellare Magnetfeldstärke bei 1 AU
     L = AU          # Längenskala, AU
@@ -65,18 +65,18 @@ ylabel!("AU")
 #magn field lines calculated from field
 
 function ode_system(du,u,p,t)
-    du .= magnetic_field(u, t) ./ norm(magnetic_field(u,t))
+    du .= magnetic_field(u) ./ norm(magnetic_field(u))
 end
 
 function magn_field_line(u0, tspan) #need to solve g' = F(g)
     prob = ODEProblem(ode_system,u0,tspan)
-    sol = solve(prob,dtmax=100)
+    sol = solve(prob)
     X = [x[1] for x in sol.u]
     Y = [x[2] for x in sol.u]
-    plot(X/AU,Y/AU,label="Field line",aspect_ratio=:equal)
+    plot(X/AU,Y/AU,label="Field line",xlims=(-10,10),ylims=(-10,10))
     xlabel!("AU")
     ylabel!("AU")
     
 end
 
-magn_field_line([AU,AU,0],(0.0,2e6))
+magn_field_line([AU/10,AU/10,0],(0.0,2e20))
