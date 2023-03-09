@@ -70,13 +70,15 @@ end
 
 function magn_field_line(u0, tspan) #need to solve g' = F(g)
     prob = ODEProblem(ode_system,u0,tspan)
-    sol = solve(prob)
+    sol = solve(prob,dtmax=1e10)
     X = [x[1] for x in sol.u]
     Y = [x[2] for x in sol.u]
-    plot(X/AU,Y/AU,label="Field line",xlims=(-10,10),ylims=(-10,10))
+    Z = [x[3] for x in sol.u]
+    plot3d(X/AU,Y/AU,Z/AU,label="Parker Spiral",xlims=(-100,100),ylims=(-100,100),zlims=(-100,100),size=(800,600))
     xlabel!("AU")
     ylabel!("AU")
+    zlabel!("AU")
     
 end
 
-magn_field_line([AU/10,AU/10,0],(0.0,2e20))
+magn_field_line([AU/10,AU/10,AU/10],(0.0,1e15))
