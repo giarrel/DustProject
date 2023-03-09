@@ -1,8 +1,9 @@
 using Plots
 #using CairoMakie
 using LinearAlgebra
+using DifferentialEquations
 
-#used The Heliospheric Magnetic Field Mathew J. Owens(2013), Heliospheric Magnetic Field and The Parker Model N. S. Svirzhevsky(2021)
+#used Kinematic models of the interplanetary magnetic field Christoph Lhotka and Yasuhito Narita (2019), The Heliospheric Magnetic Field Mathew J. Owens(2013), nicht in datenbank gefunden hat aber geholfen die beiden anderen paper zu finden : Heliospheric Magnetic Field and The Parker Model N. S. Svirzhevsky(2021) 
 
 const AU = 1.496e11::Float64                            # 1AU [m]
 
@@ -29,6 +30,7 @@ function magnetic_field(r_vec, t)
     B_x, = B_r * sin(θ) * cos(φ) + B_theta * cos(θ) * cos(φ) - B_phi * sin(φ)
     B_y = B_r * sin(θ) * sin(φ) + B_theta * cos(θ) * sin(φ) + B_phi * cos(φ)
     B_z = B_r * cos(θ) - B_theta * sin(θ)
+
     return [B_x, B_y, B_z]
 end
 
@@ -54,5 +56,19 @@ xlabel!("AU")
 ylabel!("AU")
 #p=streamplot(f,xmin..xmax,ymin..ymax)
 #display(p)
-norm(magnetic_field([AU,0,0],0))
 
+
+function ode_system(du,u,p,t)
+    du .= magnetic_field(u, t) ./ norm(magnetic_field(u,t))
+end
+
+function magn_field_line(u0, tspan) #need to solve g' = F(g)
+    prob = ODEProblem(ode_system,u0,tspan)
+    sol = solve(prob,dtmax=10)
+    X = [x[1] for x in sol.u]
+    Y = [x[2] for x in sol.u]
+    plot(X/AU,Y/AU,label="Field line",aspect_ratio=:equal)
+    
+end
+
+magn_field_line([AU,AU,0],(0.0,1e7))
