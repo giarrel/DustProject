@@ -14,7 +14,7 @@ phi = 0
 
 # parameters
 tspan = (0.0,60*yr)                                    # time span (start, end)
-no_of_trajectories = [4,4]                                #sqrt of no of traj
+no_of_trajectories = [5,5]                                #sqrt of no of traj
 
 s0 = [0,r_heliosphere,0,0,-v0,0]
 
@@ -29,7 +29,7 @@ end
 
 
 # Write the function (differential equation)
-function EqOfMotion(ds, s, p, t, b=0,qm=20)
+function EqOfMotion(ds, s, p, t, b=5,qm=10)
     ds[1:3] = s[4:6]                                    # derivative of position = velocity
     ds[4:6] = grav_srp(s[1:3],b) +  lorenzf(qm,s[4:6],magnetic_field(s[1:3]))                    # derivative of velocity = acceleration
     #ds[4:6] = lorenzf(qm,s[4:6],magnetic_field(s[1:3])) #just to test what lorenzforce does
@@ -73,6 +73,18 @@ function magnetic_field(r_vec, t = 0)
     return [B_x, B_y, B_z]
 end
 
+#callback stuff to end trajectory that hits the sun
+function condition(dist,t,integrator) 
+    s = integrator.u
+    dist = sqrt(s[1]^2 + s[2]^2 + s[3]^2) # Die Entfernung vom Ursprung 
+    dist <0.1*AU # Die Bedingung für das Stoppen end
+end
+function affect!(integrator)
+    terminate!(integrator) # Die Aktion für das Stoppen
+end
+
+cb = DiscreteCallback(condition,affect!) # Erstellen Sie den Callback
+
 #solve for r
 
 prob = [ODEProblem(EqOfMotion, s0[:,i], tspan) for i in axes(s0,2)]                # ODE Problem
@@ -85,18 +97,6 @@ for j in axes(r)[1]
         r[j][i,3] = sol[j].u[i][3]
     end
 end
-
-#callback stuff to end trajectory that hits the sun
-function condition(dist,t,integrator) 
-    s = integrator.u
-    dist = sqrt(s[1]^2 + s[2]^2 + s[3]^2) # Die Entfernung vom Ursprung 
-    dist <0.1*AU # Die Bedingung für das Stoppen end
-end
-function affect!(integrator)
-    terminate!(integrator) # Die Aktion für das Stoppen
-end
-
-cb = DiscreteCallback(condition,affect!) # Erstellen Sie den Callback
 
 r .= r ./ AU                                            # scale for plotting
 
