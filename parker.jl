@@ -64,11 +64,11 @@ end
 
 function magn_field_line(u0, tspan) #need to solve g' = F(g)
     prob = ODEProblem(ode_system,u0,tspan)
-    sol = solve(prob,dtmax=10)
+    sol = solve(prob,dtmax=100)
     X = [x[1] for x in sol.u]
     Y = [x[2] for x in sol.u]
     plot(X/AU,Y/AU,label="Field line",aspect_ratio=:equal)
     
 end
 
-magn_field_line([AU,AU,0],(0.0,1e7))
+magn_field_line([AU,AU,0],(0.0,2e6))
