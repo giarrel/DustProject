@@ -74,6 +74,8 @@ function magn_field_line(u0, tspan) #need to solve g' = F(g)
     X = [x[1] for x in sol.u]
     Y = [x[2] for x in sol.u]
     plot(X/AU,Y/AU,label="Field line",aspect_ratio=:equal)
+    xlabel!("AU")
+    ylabel!("AU")
     
 end
 
