@@ -41,7 +41,7 @@ function ode_system(du,u,p,t)
     du .= magnetic_field(u) ./ norm(magnetic_field(u))
 end
 
-function magn_field_line(u0, tspan) #need to solve g' = F(g)
+function magn_field_line(u0, tspan) #need to solve g' = F(g) siehe https://uwaterloo.ca/physics-of-information-lab/sites/ca.physics-of-information-lab/files/uploads/files/amath231_1.2.2.pdf
     prob = ODEProblem(ode_system,u0,tspan)
     sol = solve(prob,dtmax=1e10)
     X = [x[1] for x in sol.u]
