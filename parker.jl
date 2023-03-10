@@ -8,7 +8,7 @@ const AU = 1.496e11::Float64                            # 1AU [m]
 const Rsun = 696340e3                                   # solar radius, [m]
 
 # Definieren Sie die magnetische Feldfunktion der Parker Spirale
-function magnetic_field(r_vec, t = 0)
+function magnetic_field(r_vec)
     # Konstanten
     B0 = 5e-9        # nT, interstellare Magnetfeldstärke bei 1 AU
     L = AU          # Längenskala, AU
@@ -18,7 +18,7 @@ function magnetic_field(r_vec, t = 0)
     # Umwandlung in zylindrische Koordinaten
     x, y, z = r_vec[1], r_vec[2], r_vec[3]
     r = sqrt(x^2 + y^2 + z^2)
-    θ, φ =  acos(z/r), atan(y, x)+ omega*t
+    θ, φ =  acos(z/r), atan(y, x)
     v_r_solar = 430e3 #solar wind speed in m/s
     
     # Berechnen Sie die Parker-Spirale Magnetfeldkomponenten neu: cos(teta) eingefügt nach parkers paper rauskomentiert wegen nicht sicher
