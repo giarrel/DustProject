@@ -1,8 +1,10 @@
+#ACHTUNG NOCH nicht fertig/lauffähig
+
 using Plots
 using LinearAlgebra
 using DifferentialEquations
 
-#used Kinematic models of the interplanetary magnetic field Christoph Lhotka and Yasuhito Narita (2019), The Heliospheric Magnetic Field Mathew J. Owens(2013), nicht in datenbank gefunden hat aber geholfen die beiden anderen paper zu finden : Heliospheric Magnetic Field and The Parker Model N. S. Svirzhevsky(2021) 
+#used Burger (2008) https://iopscience.iop.org/article/10.1086/525039/pdf
 
 const AU = 1.496e11::Float64                            # 1AU [m]
 const Rsun = 696340e3                                   # solar radius, [m]
@@ -21,10 +23,16 @@ function magnetic_field(r_vec, t = 0)
     θ, φ =  acos(z/r), atan(y, x)+ omega*t
     v_r_solar = 430e3 #solar wind speed in m/s
     
-    # Berechnen Sie die Parker-Spirale Magnetfeldkomponenten neu: cos(teta) eingefügt nach parkers paper rauskomentiert wegen nicht sicher
-    B_r = B0 * (r/L)^(-2) #* cos(θ)
-    B_phi = -B0 * omega * L^2 * sin(θ)/(v_r_solar*r) #* cos(θ)
-    B_theta = 0.0
+    # Berechnen Sie die Parker-Spirale Magnetfeldkomponenten von Burger eq 4
+    B_r = B0 * (L/r)^2
+
+    B_theta = B_r*r/v_r_solar*omega_star*sin(beta_star)*sin(phi_star)
+
+    B_phi = B_r*r/v_r_solar*(omega_star*sin(beta_star)*cos(θ)*cos(phi_star)+
+                            sin(θ)*(omega_star*cos(beta_star)-omega)+
+                            domega_star_dtheta*sin(beta_star)*sin(θ)*cos(phi_star)+
+                            omega_star*dbeta_star_dtheta*cos(beta_star)*sin(θ)*cos(phi_star))
+    
     
     # Umwandlung zurück in kartesische Koordinaten
     B_x, = B_r * sin(θ) * cos(φ) + B_theta * cos(θ) * cos(φ) - B_phi * sin(φ)
@@ -60,35 +68,6 @@ end
 
 timespan=(0.0,1e15)
 θ , φ = π/2 , 0                            #θ 0 bis pi, φ 0 bis 2pi
-startpoint= 2.5*Rsun .* [sin(θ)*cos(φ),sin(θ)*sin(φ),cos(θ)]
+startpoint= Rsun .* [sin(θ)*cos(φ),sin(θ)*sin(φ),cos(θ)]
 
 magn_field_line(startpoint,timespan,θ,φ)
-
-#=
-#first approach using quiver maybee need later to see how i created a grid
-
-#using CairoMakie
-
-xmin, xmax = -10*AU, 10*AU
-ymin, ymax = -10*AU, 10*AU
-
-# Erstellen eines Gitters von Koordinaten im Raum, mit entsprechenen magnetfeld werten
-xgrid, ygrid = range(xmin, xmax, length=20), range(ymin, ymax, length=20)
-
-grid=[[x,y] for x in xgrid for y in ygrid] #vektor länge lenth *length mit einträgen [x,y] aus allen x y kombinationen möglichkeiten
-X,Y = getindex.(grid, 1),getindex.(grid, 2) #erste einträge von vektor in vektor, zweite einträge von vektor in vektor
-
-B = [1e9*magnetic_field([x,y,0],1/2)[1:2] for x in xgrid for y in ygrid]#analog zu grid
-Bx,By=getindex.(B, 1),getindex.(B, 2)#analog zu X,Y
-
-
-#f(x,y)=Point2f(magnetic_field([x,y,0])[1:2])
-#norm(f(10*AU,0))
-
-plot(size=(400,400),xlims=(-10,10),ylims=(-10,10),title = "Parker Spiral z=0")
-quiver!(X/AU,Y/AU,quiver=(Bx,By)) #plot(X/AU,Y/AU) mit pfeilen (Bx,By)  (geht nur 2d)
-xlabel!("AU")
-ylabel!("AU")
-#p=streamplot(f,xmin..xmax,ymin..ymax)
-#display(p)
-=#
