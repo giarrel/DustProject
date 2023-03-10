@@ -8,28 +8,41 @@ const AU = 1.496e11::Float64                            # 1AU [m]
 const yr = 3.154e7::Float64                             # 1yr [s]
 const day = 24.0 * 60.0 * 60.0::Float64                 # 1d [s]
 const r_heliosphere = 100*AU                            # radius heliosphere [m]
-v0 = 26e3                                               # speed of incomming isd in [m/s]
-theta = pi/2
-phi = 0
+const SWSS = 2.5 *696340e3                              # 2.5*solar radius, [m]
 
 # parameters
 tspan = (0.0,60*yr)                                    # time span (start, end)
-no_of_trajectories = [5,5]                                #sqrt of no of traj
+v0 = 26e3                                               # speed of incomming isd in [m/s]
+some_no_related_to_ammount_of_traj,dreide =5,false     
 
-s0 = [0,r_heliosphere,0,0,-v0,0]
+function trajectories(ammount,dreid)
+    s0 = [0,r_heliosphere,0,0,-v0,0]
 
-#different entrypoints in heliosphere, acess via s0[:,i] for i 1:no_of_trajectories (0 kein gültiger index)]
-
-for i in 0 : no_of_trajectories[1]
-    for j in 0 : no_of_trajectories[2]    
-        local s = [-r_heliosphere+2*r_heliosphere*i/no_of_trajectories[1],r_heliosphere,-r_heliosphere+2*r_heliosphere*j/no_of_trajectories[2],0,-v0,0]
-        global s0 = hcat(s0, s)
+    if dreid==false
+        for i in 0:ammount
+            s = [-r_heliosphere+2*r_heliosphere*i/ammount,r_heliosphere,0,0,-v0,0]
+            s0=hcat(s0,s)
+        end
+        return s0
+    else
+        for i in 0 : ammount
+            for j in 0 : ammount    
+                s = [-r_heliosphere+2*r_heliosphere*i/ammount,r_heliosphere,-r_heliosphere+2*r_heliosphere*j/ammount,0,-v0,0]
+                s0 = hcat(s0, s)
+            end
+        end
+        return s0
     end
 end
 
+s0=trajectories(some_no_related_to_ammount_of_traj,dreide)
+
+#use this for parameter studdy
+#s0 = [0,r_heliosphere,0,0,-v0,0]
+
 
 # Write the function (differential equation)
-function EqOfMotion(ds, s, p, t, b=5,qm=10)
+function EqOfMotion(ds, s, p, t, b=1,qm=0)
     ds[1:3] = s[4:6]                                    # derivative of position = velocity
     ds[4:6] = grav_srp(s[1:3],b) +  lorenzf(qm,s[4:6],magnetic_field(s[1:3]))                    # derivative of velocity = acceleration
     #ds[4:6] = lorenzf(qm,s[4:6],magnetic_field(s[1:3])) #just to test what lorenzforce does
@@ -77,7 +90,7 @@ end
 function condition(dist,t,integrator) 
     s = integrator.u
     dist = sqrt(s[1]^2 + s[2]^2 + s[3]^2) # Die Entfernung vom Ursprung 
-    dist <0.1*AU # Die Bedingung für das Stoppen end
+    dist < SWSS # Die Bedingung für das Stoppen end
 end
 function affect!(integrator)
     terminate!(integrator) # Die Aktion für das Stoppen
@@ -115,11 +128,15 @@ function threedim()
     for i in eachindex(r)
         plot3d!(r[i][:,1], r[i][:,2], r[i][:,3],label = false)
     end
+
+    print("last computed position of s0")
+    print(r[1][size(r[1])[1],:])
+
     scatter3d!([0],[0],[0],label = "sun", color=:yellow)
     plot3d!(size=(800,600), xlabel="AU", ylabel="AU", zlabel="AU")
     plot3d!(title="ISD Trajectories in 3D")
 end
 
 #plots
-twodim()
+#twodim()
 threedim()
