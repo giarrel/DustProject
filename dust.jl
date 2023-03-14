@@ -13,8 +13,9 @@ const SWSS = 2.5 *696340e3                              # 2.5*solar radius, [m]
 # parameters
 tspan = (0.0,60*yr)                                    # time span (start, end)
 v0 = 30e3                                               # speed of incomming isd in [m/s]
-beta=0.5
-q_durch_m=0
+beta=0.5                                                   #beta for srp
+q_durch_m=0                                                #q/m for lorenz
+integral_method ,max_timestepp = RK4() , 1e10           #in seconds
 some_no_related_to_ammount_of_traj,dreide = 5,false     
 
 function trajectories(ammount,dreid)
@@ -62,7 +63,7 @@ end
 
 
 # Definieren Sie die magnetische Feldfunktion der Parker Spirale
-function magnetic_field(r_vec, t = 0)
+function magnetic_field(r_vec)
     # Konstanten
     B0 = 5e-9        # nT, interstellare Magnetfeldstärke bei 1 AU
     L = AU          # Längenskala, AU
@@ -72,7 +73,7 @@ function magnetic_field(r_vec, t = 0)
     # Umwandlung in zylindrische Koordinaten
     x, y, z = r_vec[1], r_vec[2], r_vec[3]
     r = sqrt(x^2 + y^2 + z^2)
-    θ, φ =  acos(z/r), atan(y, x)+ omega*t
+    θ, φ =  acos(z/r), atan(y, x)
     v_r_solar = 400e3 #solar wind speed in m/s
     
     # Berechnen Sie die Parker-Spirale Magnetfeldkomponenten
@@ -103,7 +104,7 @@ cb = DiscreteCallback(condition,affect!) # Erstellen Sie den Callback
 #solve for r
 
 prob = [ODEProblem(EqOfMotion, s0[:,i], tspan) for i in axes(s0,2)]                # ODE Problem
-sol = [solve(prob[i], RK4(), callback=cb) for i in axes(prob, 1)]      # solve the problem
+sol = [solve(prob[i], integral_method ,dtmax = max_timestepp, callback=cb) for i in axes(prob, 1)]      # solve the problem
 r = [Array{Float64}(undef, length(sol[i].t), 3) for i in axes(sol)[1]]          # prepare positions
 for j in axes(r)[1]
     for i in eachindex(sol[j].t)                               # get positions
