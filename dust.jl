@@ -12,8 +12,10 @@ const SWSS = 2.5 *696340e3                              # 2.5*solar radius, [m]
 
 # parameters
 tspan = (0.0,60*yr)                                    # time span (start, end)
-v0 = 26e3                                               # speed of incomming isd in [m/s]
-some_no_related_to_ammount_of_traj,dreide =5,false     
+v0 = 30e3                                               # speed of incomming isd in [m/s]
+beta=0.5
+q_durch_m=0
+some_no_related_to_ammount_of_traj,dreide = 5,false     
 
 function trajectories(ammount,dreid)
     s0 = [0,r_heliosphere,0,0,-v0,0]
@@ -38,11 +40,11 @@ end
 s0=trajectories(some_no_related_to_ammount_of_traj,dreide)
 
 #use this for parameter studdy
-#s0 = [0,r_heliosphere,0,0,-v0,0]
+s0 = [AU,0,0,0,-v0,0]
 
 
 # Write the function (differential equation)
-function EqOfMotion(ds, s, p, t, b=1,qm=0)
+function EqOfMotion(ds, s, p, t, b=beta,qm=q_durch_m)
     ds[1:3] = s[4:6]                                    # derivative of position = velocity
     ds[4:6] = grav_srp(s[1:3],b) +  lorenzf(qm,s[4:6],magnetic_field(s[1:3]))                    # derivative of velocity = acceleration
     #ds[4:6] = lorenzf(qm,s[4:6],magnetic_field(s[1:3])) #just to test what lorenzforce does
