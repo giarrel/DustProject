@@ -16,7 +16,8 @@ v0 = 30e3                                               # speed of incomming isd
 beta=0.5                                                   #beta for srp
 q_durch_m=0                                                #q/m for lorenz
 integral_method ,max_timestepp = RK4() , 1e10           #in seconds
-some_no_related_to_ammount_of_traj,dreide = 5,false     
+some_no_related_to_ammount_of_traj,dreide = 5,false
+startposition  =  [AU,0,0,0,-v0,0]
 
 function trajectories(ammount,dreid)
     s0 = [0,r_heliosphere,0,0,-v0,0]
@@ -41,7 +42,7 @@ end
 s0=trajectories(some_no_related_to_ammount_of_traj,dreide)
 
 #use this for parameter studdy
-s0 = [AU,0,0,0,-v0,0]
+s0 = startposition
 
 
 # Write the function (differential equation)
