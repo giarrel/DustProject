@@ -15,7 +15,7 @@ tspan = (0.0,60*yr)                                    # time span (start, end)
 v0 = 30e3                                               # speed of incomming isd in [m/s]
 beta=0.5                                                   #beta for srp
 q_durch_m=0                                                #q/m for lorenz
-integral_method ,relative_tollerance = RK4() , 1e-10           #in seconds
+integral_method ,max_timestepp = RK4() , 1e10           #in seconds
 some_no_related_to_ammount_of_traj,dreide = 5,false     
 
 function trajectories(ammount,dreid)
@@ -41,7 +41,7 @@ end
 s0=trajectories(some_no_related_to_ammount_of_traj,dreide)
 
 #use this for parameter studdy
-#s0 = [AU,0,0,0,-v0,0]
+s0 = [AU,0,0,0,-v0,0]
 
 
 # Write the function (differential equation)
