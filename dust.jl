@@ -11,12 +11,15 @@ const r_heliosphere = 100*AU                            # radius heliosphere [m]
 const SWSS = 2.5 *696340e3                              # 2.5*solar radius, [m]
 
 # parameters
-tspan = (0.0,60*yr)                                    # time span (start, end)
+tspan = (0.0,1e3*yr)                                    # time span (start, end)
 v0 = 30e3                                               # speed of incomming isd in [m/s]
-beta=0.5                                                   #beta for srp
+beta=0.49                                                   #beta for srp
 q_durch_m=0                                                #q/m for lorenz
-integral_method ,max_timestepp = RK4() , 1e10           #in seconds
-some_no_related_to_ammount_of_traj,dreide = 5,false     
+integral_method ,relative_tollerance = Rodas5P() , 1e-10           #in seconds
+some_no_related_to_ammount_of_traj,dreide = 5,false  
+start_point = [AU,0,0,0,-v0,0]   
+
+
 
 function trajectories(ammount,dreid)
     s0 = [0,r_heliosphere,0,0,-v0,0]
@@ -116,18 +119,10 @@ end
 
 r .= r ./ AU                                            # scale for plotting
 
-#plot2d function
-function twodim()
-    plot(xlabel = "AU", ylabel = "AU",xlims=(-110, 110), ylims=(-120, 140))
-    scatter!([0],[0],label = "sun", color=:yellow) # fügen das Sonnensymbol (Kreis mit Loch)
-    [plot!(r[i][:,1], r[i][:,2],label = false) for i in 1:size(r)[1]]
-    θ = LinRange(0 , 2*π , 100)
-    plot!(r_heliosphere./ AU  * cos.(θ),r_heliosphere./ AU  * sin.(θ),size=(400,400),label = "heliosphere",title="ISD Trajectories in 2D")
-end
-
 # 3D plot function
+plot3d()
 function threedim()
-    plot3d()
+#    plot3d()
     for i in eachindex(r)
         plot3d!(r[i][:,1], r[i][:,2], r[i][:,3],label = false)
     end
@@ -141,5 +136,4 @@ function threedim()
 end
 
 #plots
-#twodim()
 threedim()
