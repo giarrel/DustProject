@@ -16,10 +16,11 @@ v0 = 5e3                                               # speed of incomming isd 
 beta=0                                                   #beta for srp
 q_durch_m=0                                                #q/m for lorenz
 fixed_step_size = day                                    #in seconds  
+relative_tollerance,use_tol = 1e-3 , false
 s0 = [AU,0,0,0,-v0,0]
 
 # Definieren Sie verschiedene Integrationsmethoden und Farben für den Plot
-integration_methods = [Tsit5(), BS3(), Rodas5P()]#, DP5(), SSPRK22(),Rodas5P()]
+integration_methods = [Tsit5(), BS3(), RK4()]
 method_names = [string(typeof(method)) for method in integration_methods]
 method_labels = [split(string(method), '(')[1] for method in integration_methods]
 
@@ -84,7 +85,12 @@ cb = DiscreteCallback(condition,affect!) # Erstellen Sie den Callback
 
 # Nach der Vereinfachung:
 prob = ODEProblem(EqOfMotion, s0, tspan)
-solutions = [solve(prob, method, dt=fixed_step_size, callback=cb) for method in integration_methods]
+
+if use_tol == false
+    solutions = [solve(prob, method, dt=fixed_step_size, callback=cb) for method in integration_methods] #for fixed timestepp
+else
+    solutions = [solve(prob, method, reltol=relative_tollerance, callback=cb) for method in integration_methods] #for variable timestepp 
+end
 
 # In der 3D-Plot-Funktion:
 function threedim()
@@ -102,7 +108,11 @@ function threedim()
 
     scatter3d!([0], [0], [0], label = "sun", color = :yellow)
     plot3d!(size = (800, 600), xlabel = "AU", ylabel = "AU", zlabel = "AU")
-    plot3d!(title = "Test Trajectories in 3D with dt=$fixed_step_size seconds and v0=$v0 m/s")
+    if use_tol == false
+        plot3d!(title = "Test Trajectories in 3D with dt=$fixed_step_size seconds and v0=$v0 m/s")
+    else
+        plot3d!(title = "Test Trajectories in 3D with rel_tol=$relative_tollerance and v0=$v0 m/s")
+    end
     plot3d!(legend = :outertopright)
 end
 
