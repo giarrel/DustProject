@@ -15,7 +15,7 @@ tspan = (0.0,60*yr)                                    # time span (start, end)
 v0 = 30e3                                               # speed of incomming isd in [m/s]
 beta=0.5                                                   #beta for srp
 q_durch_m=0                                                #q/m for lorenz
-integral_method ,max_timestepp = RK4() , 1e10           #in seconds
+integral_method ,relative_tollerance = RK4() , 1e-10           #in seconds
 some_no_related_to_ammount_of_traj,dreide = 5,false     
 
 function trajectories(ammount,dreid)
@@ -41,7 +41,7 @@ end
 s0=trajectories(some_no_related_to_ammount_of_traj,dreide)
 
 #use this for parameter studdy
-s0 = [AU,0,0,0,-v0,0]
+#s0 = [AU,0,0,0,-v0,0]
 
 
 # Write the function (differential equation)
@@ -77,7 +77,7 @@ function magnetic_field(r_vec)
     v_r_solar = 400e3 #solar wind speed in m/s
     
     # Berechnen Sie die Parker-Spirale Magnetfeldkomponenten
-    B_r = B0 * (r/L)^(-2)
+    B_r = B0 * (L/r)^2
     B_phi = -B0 * omega * L^2 * sin(θ)/(v_r_solar*r)
     B_theta = 0.0
     
@@ -104,7 +104,7 @@ cb = DiscreteCallback(condition,affect!) # Erstellen Sie den Callback
 #solve for r
 
 prob = [ODEProblem(EqOfMotion, s0[:,i], tspan) for i in axes(s0,2)]                # ODE Problem
-sol = [solve(prob[i], integral_method ,dtmax = max_timestepp, callback=cb) for i in axes(prob, 1)]      # solve the problem
+sol = [solve(prob[i], integral_method ,reltol = relative_tollerance, callback=cb) for i in axes(prob, 1)]      # solve the problem
 r = [Array{Float64}(undef, length(sol[i].t), 3) for i in axes(sol)[1]]          # prepare positions
 for j in axes(r)[1]
     for i in eachindex(sol[j].t)                               # get positions

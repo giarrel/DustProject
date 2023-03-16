@@ -45,7 +45,7 @@ end
 
 function magn_field_line(u0, tspan, θ , φ) #need to solve g' = F(g) siehe https://uwaterloo.ca/physics-of-information-lab/sites/ca.physics-of-information-lab/files/uploads/files/amath231_1.2.2.pdf
     prob = ODEProblem(ode_system,u0,tspan)
-    sol = solve(prob,dtmax=1e10)
+    sol = solve(prob,reltol=1e-17)
     X = [x[1] for x in sol.u]
     Y = [x[2] for x in sol.u]
     Z = [x[3] for x in sol.u]
@@ -55,10 +55,9 @@ function magn_field_line(u0, tspan, θ , φ) #need to solve g' = F(g) siehe http
     xlabel!("AU")
     ylabel!("AU")
     zlabel!("AU")
-    
 end
 
-timespan=(0.0,1e15)
+timespan=(0.0,1e16)
 θ , φ = π/2 , 0                            #θ 0 bis pi, φ 0 bis 2pi
 startpoint= 2.5*Rsun .* [sin(θ)*cos(φ),sin(θ)*sin(φ),cos(θ)]
 
