@@ -11,18 +11,18 @@ const r_heliosphere = 100*AU                            # radius heliosphere [m]
 const SWSS = 2.5 *696340e3                              # 2.5*solar radius, [m]
 
 # parameters
-tspan = (0.0,2yr)                                    # time span (start, end)
+tspan = (0.0,3yr)                                    # time span (start, end)
 v0 = 5e3                                               # speed of incomming isd in [m/s]
 beta=0                                                   #beta for srp
 q_durch_m=0                                                #q/m for lorenz
-fixed_step_size = day                                    #in seconds  
-relative_tollerance,use_tol = 1e-3 , false
+fixed_step_size = 1e-5day                                    #in seconds  
+relative_tollerance,use_tol = 1e-10 , false
 s0 = [AU,0,0,0,-v0,0]
 
 # Definieren Sie verschiedene Integrationsmethoden und Farben für den Plot
-integration_methods = [Tsit5(), BS3(), RK4()]
+integration_methods = [KenCarp58(),Rodas5P()]
 method_names = [string(typeof(method)) for method in integration_methods]
-method_labels = [split(string(method), '(')[1] for method in integration_methods]
+method_labels = [split(split(string(method), '{')[1], '(')[1] for method in integration_methods]
 
 
 # Write the function (differential equation)
