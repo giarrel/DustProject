@@ -11,9 +11,11 @@
 #to position vector r(t) [m] and r_dot(t) [m/s]
 
 
-
-function keplerian_to_cartesian(a, e, ω, Ω, i, M0, t0, t, tolerance=1e-10)
+function keplerian_to_cartesian(comet_name::String,t0,t; tol=1e-10)
     
+    comet = comets[comet_name]
+    a, e, ω, Ω, i, M0 = comet.a, comet.e, comet.peri, comet.node, comet.i, comet.M0
+
     local mu = 1.327e20::Float64                            # G * M_sol [m^3 / s^2]
 
     function M_t()
@@ -28,7 +30,7 @@ function keplerian_to_cartesian(a, e, ω, Ω, i, M0, t0, t, tolerance=1e-10)
         return E_i
     end
 
-    E = E_t(tolerance)
+    E = E_t(tol)
 
     function true_anomaly()
         arg1 = sqrt(1 + e) * sin(E / 2)
