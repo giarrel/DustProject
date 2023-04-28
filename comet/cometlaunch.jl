@@ -2,22 +2,21 @@ using OrdinaryDiffEq
 using DifferentialEquations
 using LinearAlgebra
 
+include("constants.jl")
 
 function launch_from_comet(initial_vel, initial_pos, tspan, beta, method; adaptive=false, stepsize=1e5, abstol=1e-3, reltol=1e-3)
-
-    local mu = 1.327e20::Float64                            # G * M_sol [m^3 / s^2]
 
     # Define the second order ODE for the comet's orbit
     function orbit_ode(ddu,du, u, p, t)
         
-        beta,mu = p
+        beta,GM = p
         r = norm(u)
-        ddu .= -mu * u / r^3 *(1-beta)
+        ddu .= -GM * u / r^3 *(1-beta)
 
     end
 
     # Initial conditions and problem setup
-    p = (beta,mu)
+    p = (beta,GM)
 
     prob = SecondOrderODEProblem(orbit_ode, initial_vel, initial_pos, tspan, p)
     sol = solve(prob, method, adaptive=adaptive, dt=stepsize, abstol=abstol, reltol=reltol)
@@ -39,15 +38,14 @@ end
 
 function launch_from_comet_1ord(initial_vel, initial_pos, tspan, beta, method; adaptive=false, stepsize=1e5, abstol=1e-3, reltol=1e-3)
 
-    local mu = 1.327e20::Float64                            # G * M_sol [m^3 / s^2]
 
     # Define the first order ODE system for the comet's orbit
     function orbit_ode!(du, u, p, t)
         
-        beta, mu = p
+        beta, GM = p
         r = norm(u[1:3])
         du[1:3] = u[4:6]
-        du[4:6] = -mu * u[1:3] / r^3 * (1 - beta)
+        du[4:6] = -GM * u[1:3] / r^3 * (1 - beta)
 
     end
 
