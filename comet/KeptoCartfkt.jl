@@ -1,5 +1,5 @@
 #https://downloads.rene-schwarz.com/download/M001-Keplerian_Orbit_Elements_to_Cartesian_State_Vectors.pdf
-
+include("constants.jl")
 #convert a traditional set of Keplerian Orbit Elements
 #– Semi-major axis a [m]
 #– Eccentricity e [1]
@@ -15,11 +15,11 @@ function keplerian_to_cartesian(comet_name::String,t0,t; tol=1e-10)
     
     comet = comets[comet_name]
     a, e, ω, Ω, i, M0 = comet.a, comet.e, comet.peri, comet.node, comet.i, comet.M0
-
-    local mu = 1.327e20::Float64                            # G * M_sol [m^3 / s^2]
+    
+    t=(t-t0)
 
     function M_t()
-        return M0 + (t - t0) * sqrt(mu / a^3) % (2 * π)
+        return (M0 + t * sqrt(GM / a^3))%(2pi)
     end
 
     function E_t(tolerance)
@@ -54,8 +54,8 @@ function keplerian_to_cartesian(comet_name::String,t0,t; tol=1e-10)
         o = [ox, oy, oz]
     
         # Velocity vector o_dot(t)
-        o_dot_x = sqrt(mu * a) / rc * (-sin(E))
-        o_dot_y = sqrt(mu * a) / rc * (sqrt(1 - e^2) * cos(E))
+        o_dot_x = sqrt(GM * a) / rc * (-sin(E))
+        o_dot_y = sqrt(GM * a) / rc * (sqrt(1 - e^2) * cos(E))
         o_dot_z = 0.0
         o_dot = [o_dot_x, o_dot_y, o_dot_z]
     
