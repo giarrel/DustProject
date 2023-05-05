@@ -4,8 +4,8 @@ include("constants.jl")
 
 for comet_name in keys(comets)
     local period = comets[comet_name].period
-    local times_all = range(0, stop=100 * period, step=0.1 * day)
-    local timebegin_last = (100 - 1) * period  # Start at the second to last period
+    local times_all = range(0, stop=1000 * period, step=1 * day)
+    local timebegin_last = (1000 - 1) * period  # Start at the second to last period
     local timeend_last = 20 * period          # End at the last period
 
     # Generate orbit points for all times
@@ -33,7 +33,7 @@ for comet_name in keys(comets)
     local perihelion = minimum(distances)
     local perisbdb = comets[comet_name].Q * (1 - comets[comet_name].e) / (1 + comets[comet_name].e)
 
-    println(comet_name," (with stepsize 0.1 day):")
+    println(comet_name," (with stepsize 1 day):")
     println("Aphelion distance (from conversion vs sbdb): ", aphelion / AU, " AU vs ", comets[comet_name].Q / AU, " AU with rel error ", (aphelion - comets[comet_name].Q) / comets[comet_name].Q, "%")
     println("Perihelion distance distance (from conversion vs sbdb): ", perihelion / AU, " AU vs ", perisbdb / AU, " AU with rel error ", (perihelion - perisbdb) / perisbdb, "%")
     println("------------------")

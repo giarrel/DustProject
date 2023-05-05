@@ -1,4 +1,4 @@
-using Plots
+using CairoMakie
 using LinearAlgebra
 
 include("KeptoCartfkt.jl")
@@ -8,13 +8,22 @@ include("constants.jl")
 
 #method
 method_string = [
-KenCarp58(),
-RK4(),
-#Tsit5(),
-#Vern9(),
+#KenCarp58(),
+#RK4(),
+Tsit5(),
+Vern9(),
 #VCABM5(),
-RadauIIA5(),
+#RadauIIA5(),
 #Rodas5P()
+#VCAB3(),
+#VCAB4(),
+#VCAB5(),
+#VCABM3(),
+#VCABM4(),
+#VCABM5(),
+#VCABM(),
+#AN5(),
+#JVODE_Adams()
 ]
 
 beta=0
@@ -23,7 +32,7 @@ reltol=1e-9
 
 comet_name = "Phaethon" #Phaethon , Arend , Tuttle
 # Initial conditions and problem setup
-tspan = (0, 2comets[comet_name].period)
+tspan = (0, 20000comets[comet_name].period)
 initial_pos = keplerian_to_cartesian(comet_name, tspan[1], tspan[1])[1]
 initial_vel = keplerian_to_cartesian(comet_name, tspan[1], tspan[1])[2]
 
@@ -52,12 +61,21 @@ for method in method_string
 end
 
 # Create the plot
-p = plot(title="1nd Order abstol=$(abstol), reltol=$(reltol) ", xlabel="Time [days]", ylabel="Error relative [%]")
+f = Figure()
+Axis(f[1, 1];yscale=log10,title = "1nd Order tol=$(reltol)", xlabel="Time [days]", ylabel="Error relative [%]")
 
-# Add the errors for each method to the plot
+
 for (method_label, (error, times, comp_time)) in results_dict
-    plot!(p, times/day, error/AU, label="$(method_label) ($(comp_time) s)", linewidth=2)
+    # Filter out the values that are too small for the log plot
+    valid_indices = filter(i -> error[i] > 0, 1:length(error))
+
+    # Use only valid indices for plotting
+    filtered_error = error[valid_indices]
+    filtered_times = times[valid_indices] / day
+
+    lines!(filtered_times, filtered_error, label="$(method_label) ($(comp_time) s)")
 end
 
-# Display the plot
-display(p)
+axislegend()
+
+f

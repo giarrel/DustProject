@@ -1,4 +1,4 @@
-using Plots
+using CairoMakie
 using LinearAlgebra
 
 include("KeptoCartfkt.jl")
@@ -19,18 +19,18 @@ integrator_methods_rkn = [
 #    DPRKN4(),
 #    DPRKN5(),
 #    DPRKN6(),
-    DPRKN6FM(),
-    DPRKN8(),
+#    DPRKN6FM(),
+#    DPRKN8(),
     DPRKN12()
 ]
 
 beta=0
-stepsize=1day
+stepsize=0.1day
 
 comet_name = "Phaethon" #Phaethon , Arend , Tuttle
 
 # Initial conditions and problem setup
-tspan = (0, 2comets[comet_name].period)
+tspan = (0, 100comets[comet_name].period)
 initial_pos = keplerian_to_cartesian(comet_name, tspan[1], tspan[1])[1]
 initial_vel = keplerian_to_cartesian(comet_name, tspan[1], tspan[1])[2]
 
@@ -59,12 +59,13 @@ for method in integrator_methods_rkn
 end
 
 # Create the plot
-p = plot(title="2nd OrderODE Step size $(stepsize/day) days", xlabel="Time [days]", ylabel="Error relative [%]")
+f = Figure()
+Axis(f[1, 1];yscale=log10,title = "2nd Order stepsize=$(stepsize/day) days", xlabel="Time [days]", ylabel="Error relative [%]")
 
-# Add the errors and computation time for each method to the plot
+
 for (method_label, (error, times, comp_time)) in results_dict
-    plot!(p, times/day, error/AU, label="$(method_label) ($(comp_time) s)", linewidth=2)
+    lines!(times[2:end]/day, error[2:end], label="$(method_label) ($(comp_time) s)")
 end
+axislegend()
 
-# Display the plot
-display(p)
+f

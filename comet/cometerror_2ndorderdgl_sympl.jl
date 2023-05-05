@@ -1,4 +1,4 @@
-using Plots
+using CairoMakie
 using LinearAlgebra
 
 include("KeptoCartfkt.jl")
@@ -20,20 +20,20 @@ method_string = [
 #    CalvoSanz4(),
 #    McAte42(),
 #    McAte5(),
-    Yoshida6(),
-    KahanLi6(),
+#    Yoshida6(),
+#    KahanLi6(),
     McAte8(),
     KahanLi8(),
     SofSpa10()
 ]
 
 beta=0
-stepsize=1day
+stepsize=0.1day
 
 comet_name = "Phaethon" #Phaethon , Arend , Tuttle
 
 # Initial conditions and problem setup
-tspan = (0, 2comets[comet_name].period)
+tspan = (0, 100comets[comet_name].period)
 initial_pos = keplerian_to_cartesian(comet_name, tspan[1], tspan[1])[1]
 initial_vel = keplerian_to_cartesian(comet_name, tspan[1], tspan[1])[2]
 
@@ -62,12 +62,13 @@ for method in method_string
 end
 
 # Create the plot
-p = plot(title="symplectic 2nd Order ODE step:$(stepsize/day) days", xlabel="Time [days]", ylabel="Error relative [%]")
+f = Figure()
+Axis(f[1, 1];yscale=log10,title = "symplekt stepsize=$(stepsize/day) days", xlabel="Time [days]", ylabel="Error relative [%]")
 
-# Add the errors for each method to the plot
+
 for (method_label, (error, times, comp_time)) in results_dict
-    plot!(p, times/day, error, label="$(method_label) ($(comp_time) s)", linewidth=2)
+    lines!(times[2:end]/day, error[2:end], label="$(method_label) ($(comp_time) s)")
 end
+axislegend()
 
-# Display the plot
-display(p)
+f

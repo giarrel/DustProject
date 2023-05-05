@@ -50,7 +50,7 @@ function launch_from_comet_1ord(initial_vel, initial_pos, tspan, beta, method; a
     end
 
     # Initial conditions and problem setup
-    p = (beta, mu)
+    p = (beta, GM)
     u0 = vcat(initial_pos, initial_vel)
 
     prob = ODEProblem(orbit_ode!, u0, tspan, p)
