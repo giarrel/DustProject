@@ -8,10 +8,14 @@ include("constants.jl")
 
 #method
 method_string = [
+    Euler(),
+    Midpoint(),
+    ImplicitEuler(),
+    ImplicitMidpoint(),
 #KenCarp58(),#Singly Diagonally Implicit Runge-Kutta good for stiff(?): An A-L stable stiffly-accurate 5th order eight-stage ESDIRK method with splitting
-#RK4(),
+RK4(),
 #Tsit5(),#RK5
-Vern9(), #available with autostiffness detecting high order rk (lazy?)
+#Vern9(), #available with autostiffness detecting high order rk (lazy?)
 #VCABM5(), #this is for adaptive adam bashford
 #RadauIIA5(),#implicit RK
 #Rodas5P(), #stiff aware try on adaptive
@@ -27,21 +31,25 @@ Vern9(), #available with autostiffness detecting high order rk (lazy?)
 
 beta=0
 stepsize=0.1day
+periods = 100
 
-comet_name = "Phaethon" #Phaethon , Arend , Tuttle , Halley
+comet_name = "Phaethon" 
 
 # Initial conditions and problem setup
-tspan = (0, 20000comets[comet_name].period)
+tspan = (0, periods * comets[comet_name].period)
 initial_pos = keplerian_to_cartesian(comet_name, tspan[1], tspan[1])[1]
 initial_vel = keplerian_to_cartesian(comet_name, tspan[1], tspan[1])[2]
 
 # Initialize a dictionary to store errors, times, and computation times for each method
 results_dict = Dict{String, Tuple{Vector{Float64}, Vector{Float64}, Float64}}()
 
+# Create a string to store the names of the used methods
+methods_used = ""
+
 # Iterate over the list of integration methods
 for method in method_string
     local comp_time = @elapsed begin
-        local vel_num, pos_num, times = launch_from_comet_1ord(initial_vel, initial_pos, tspan, beta, method,stepsize=stepsize)
+        local vel_num, pos_num, times = launch_from_comet_1ord(initial_vel, initial_pos, tspan, beta, method, stepsize=stepsize)
     end
 
     # Generate orbit points using the current times vector
@@ -57,11 +65,16 @@ for method in method_string
 
     # Store the errors, times, and computation time for the current method
     results_dict[method_label] = (error, times, comp_time)
+
+    # Add the name of the current method to the string
+    global methods_used *= method_label * "_"
 end
+
+# Remove the trailing underscore from the methods_used string
+methods_used = chop(methods_used)
 
 f = Figure()
 Axis(f[1, 1];yscale=log10,title = "1nd Order stepsize=$(stepsize/day) days", xlabel="Time [days]", ylabel="Error relative [%]")
-
 
 for (method_label, (error, times, comp_time)) in results_dict
     # Filter out the values that are too small for the log plot
@@ -71,9 +84,10 @@ for (method_label, (error, times, comp_time)) in results_dict
     filtered_error = error[valid_indices]
     filtered_times = times[valid_indices] / day
 
-    lines!( filtered_times, filtered_error, label="$(method_label) ($(comp_time) s)")
+    lines!(filtered_times, filtered_error, label="$(method_label) ($(comp_time) s)")
 end
 
 axislegend()
 
-f
+# Save the plot
+save("error_plots/1ode_$(comet_name)_stepsize$(stepsize/day)_days_periods$(periods)_methods_$(methods_used).png", f)
