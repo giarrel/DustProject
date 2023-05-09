@@ -8,36 +8,29 @@ include("constants.jl")
 
 #method
 method_string = [
-#KenCarp58(),
-#RK4(),
-Tsit5(),
-Vern9(),
-#VCABM5(),
-#RadauIIA5(),
-#Rodas5P()
-#VCAB3(),
-#VCAB4(),
-#VCAB5(),
-#VCABM3(),
-#VCABM4(),
-#VCABM5(),
-#VCABM(),
-#AN5(),
-#JVODE_Adams()
+    Euler(),
+    Midpoint(),
+    ImplicitEuler(),
+    ImplicitMidpoint(),
+    RK4(),
 ]
 
 beta=0
-abstol=1e-9
-reltol=1e-9
+abstol=1e-10
+reltol=1e-10
+periods=100
 
 comet_name = "Phaethon" #Phaethon , Arend , Tuttle
 # Initial conditions and problem setup
-tspan = (0, 20000comets[comet_name].period)
+tspan = (0, periods*comets[comet_name].period)
 initial_pos = keplerian_to_cartesian(comet_name, tspan[1], tspan[1])[1]
 initial_vel = keplerian_to_cartesian(comet_name, tspan[1], tspan[1])[2]
 
 # Initialize a dictionary to store errors, times, and computation times for each method
 results_dict = Dict{String, Tuple{Vector{Float64}, Vector{Float64}, Float64}}()
+
+# Create a string to store the names of the used methods
+methods_used = ""
 
 # Iterate over the list of integration methods
 for method in method_string
@@ -58,7 +51,13 @@ for method in method_string
 
     # Store the errors, times, and computation time for the current method
     results_dict[method_label] = (error, times, comp_time)
+
+    # Add the name of the current method to the string
+    global methods_used *= method_label * "_"
 end
+
+# Remove the trailing underscore from the methods_used string
+methods_used = chop(methods_used)
 
 # Create the plot
 f = Figure()
@@ -78,4 +77,5 @@ end
 
 axislegend()
 
-f
+# Save the plot
+save("error_plots/1ode_$(comet_name)_tol$(reltol)_days_periods$(periods)_methods_$(methods_used).png", f)

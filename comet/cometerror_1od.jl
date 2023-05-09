@@ -8,29 +8,24 @@ include("constants.jl")
 
 #method
 method_string = [
-    Euler(),
-    Midpoint(),
-    ImplicitEuler(),
-    ImplicitMidpoint(),
-#KenCarp58(),#Singly Diagonally Implicit Runge-Kutta good for stiff(?): An A-L stable stiffly-accurate 5th order eight-stage ESDIRK method with splitting
-RK4(),
-#Tsit5(),#RK5
-#Vern9(), #available with autostiffness detecting high order rk (lazy?)
-#VCABM5(), #this is for adaptive adam bashford
-#RadauIIA5(),#implicit RK
-#Rodas5P(), #stiff aware try on adaptive
-#ABM54(),#In ABM54, AB5 works as predictor and Adams Moulton 4-steps method works as Corrector. Runge-Kutta method of order 4 is used to calculate starting values.
-#AB5() # not worth error too large
-#AB3(),
-#AB4(),
-#AB5(),
-#ABM32(),
-#ABM43(),
-#ABM54()
+    #RK/single step methods
+#    Euler(),
+#    Midpoint(),
+#    ImplicitEuler(),
+#    ImplicitMidpoint(),
+#    RK4(),
+
+    #Adams/multistep methods
+    AB3(),
+    AB4(),
+    AB5(),
+    ABM32(),
+    ABM43(),
+    ABM54()
 ]
 
 beta=0
-stepsize=0.1day
+stepsize=0.01day
 periods = 100
 
 comet_name = "Phaethon" 
