@@ -23,12 +23,12 @@ method_string = [
 #    ABM43(),
 #    ABM54()
 #
-Vern9()
+
 ]
 
 
 beta=0
-stepsize=1day
+stepsize=0.1day
 periods = 10000
 last_N_timesteps_outside = 50000 #put 0 for all
 

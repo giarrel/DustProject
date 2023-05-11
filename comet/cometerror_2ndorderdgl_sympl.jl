@@ -8,14 +8,14 @@ include("constants.jl")
 
 #method
 method_string = [
-#    SymplecticEuler(),
-#    VelocityVerlet(),
+    SymplecticEuler(),
+    VelocityVerlet(),
 #    VerletLeapfrog(),
-    SofSpa10()
+#    SofSpa10()
 ]
 
 beta=0
-stepsize=0.1day
+stepsize=0.05day
 periods=10000
 last_N_timesteps_outside = 50000 #put 0 for all
 
