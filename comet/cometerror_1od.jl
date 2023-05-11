@@ -8,13 +8,15 @@ include("constants.jl")
 
 #method
 method_string = [
-    #=RK/single step methods
+    #RK/single step methods
     Euler(),
     Midpoint(),
     ImplicitEuler(),
     ImplicitMidpoint(),
+    Trapezoid(),
     RK4(),
-=#
+#
+
     #Adams/multistep methods
 #    AB3(),
 #    AB4(),

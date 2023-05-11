@@ -61,7 +61,7 @@ function grav_srp(r,be)
 end
 
 function lorenzf(qm,v,B)
-    return qm*cross(v,B)
+    return -qm*cross(v,B)
 end
 
 

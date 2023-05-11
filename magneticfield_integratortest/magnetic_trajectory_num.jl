@@ -1,4 +1,4 @@
-using DifferentialEquations, GLMakie
+using DifferentialEquations, GLMakie, LinearAlgebra
 
 # Parameter definieren
 q = 1.0
@@ -14,12 +14,14 @@ u0 = vcat(x0, v0)
 # Magnetfeld
 B_field = [0, 0, B]
 
+function lorenzf(q,m,v,B_field)
+    return -q/m*cross(v,B_field)
+end
+
 # Definition der Differentialgleichungen
 function charged_particle!(du, u, p, t)
-    du[1:3] = u[4:6] # dx/dt = v
-    du[4] = q/m * (u[5]*B_field[3] - u[6]*B_field[2]) # dvx/dt = q/m * (vy*Bz - vz*By)
-    du[5] = q/m * (u[6]*B_field[1] - u[4]*B_field[3]) # dvy/dt = q/m * (vz*Bx - vx*Bz)
-    du[6] = q/m * (u[4]*B_field[2] - u[5]*B_field[1]) # dvz/dt = q/m * (vx*By - vy*Bx)
+    du[1:3] = u[4:6]
+    du[4:6] = lorenzf(q,m,u[4:6],B_field)
 end
 
 # Zeitbereich
@@ -27,7 +29,7 @@ tspan = (0.0, 10.0)
 
 # Problem und Lösung
 prob = ODEProblem(charged_particle!, u0, tspan)
-sol = solve(prob)
+sol = solve(prob,RK4(),dt=0.1,adaptive=false)
 
 # Positionen plotten
 fig = Figure()

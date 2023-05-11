@@ -12,13 +12,12 @@ method_string = [
     Midpoint(),
     ImplicitEuler(),
     ImplicitMidpoint(),
-    RK4(),
-    Vern9()
+    RK4()
 ]
 
 beta=0
-abstol=1e-15
-reltol=1e-15
+abstol=1e-10
+reltol=1e-10
 periods=10000
 last_N_timesteps_outside = 5000 #0 for all
 
