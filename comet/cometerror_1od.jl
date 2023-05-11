@@ -8,26 +8,29 @@ include("constants.jl")
 
 #method
 method_string = [
-    #RK/single step methods
-#    Euler(),
-#    Midpoint(),
-#    ImplicitEuler(),
-#    ImplicitMidpoint(),
-#    RK4(),
-
+    #=RK/single step methods
+    Euler(),
+    Midpoint(),
+    ImplicitEuler(),
+    ImplicitMidpoint(),
+    RK4(),
+=#
     #Adams/multistep methods
-    AB3(),
-    AB4(),
-    AB5(),
-    ABM32(),
-    ABM43(),
-    ABM54()
+#    AB3(),
+#    AB4(),
+#    AB5(),
+#    ABM32(),
+#    ABM43(),
+#    ABM54()
+#
+Vern9()
 ]
 
+
 beta=0
-stepsize=0.1day
-periods = 100
-last_N_timesteps_outside = 0 #put 0 for all
+stepsize=1day
+periods = 10000
+last_N_timesteps_outside = 50000 #put 0 for all
 
 comet_name = "Phaethon" 
 
@@ -49,6 +52,16 @@ for method in method_string
     end
 
     local last_N_timesteps = last_N_timesteps_outside
+    
+    #methoden die abbrechen funktionieren nicht mit nlasttimesteps logik
+    if last_N_timesteps != 0
+        if length(times) < (tspan[2]/stepsize)
+            println("skipped")
+            continue
+        end
+    end
+
+    println("not skipped")
     # Check if last_N_timesteps is 0, if so, use the full length of times
     last_N_timesteps = last_N_timesteps == 0 ? length(times) : last_N_timesteps
 
@@ -77,7 +90,7 @@ end
 methods_used = chop(methods_used)
 
 f = Figure()
-Axis(f[1, 1];yscale=log10,title = "1nd Order stepsize=$(stepsize) days", xlabel="Time [y]", ylabel="Error relative [%]")
+Axis(f[1, 1];yscale=log10,title = "1nd Order stepsize=$(stepsize/day) days", xlabel="Time [y]", ylabel="Error relative [%]")
 
 for (method_label, (error, times, comp_time, comp_time2)) in results_dict
     # Filter out the values that are too small for the log plot
@@ -94,3 +107,4 @@ axislegend()
 
 # Save the plot
 save("error_plots/1ode_$(comet_name)_stepsize$(stepsize/day)_days_periods$(periods)_methods_$(methods_used).png", f)
+GC.gc()

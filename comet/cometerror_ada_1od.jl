@@ -13,13 +13,14 @@ method_string = [
     ImplicitEuler(),
     ImplicitMidpoint(),
     RK4(),
+    Vern9()
 ]
 
 beta=0
 abstol=1e-10
 reltol=1e-10
-periods=100
-last_N_timesteps_outside = 0 #0 for all
+periods=10000
+last_N_timesteps_outside = 50000 #0 for all
 
 comet_name = "Phaethon" #Phaethon , Arend , Tuttle
 # Initial conditions and problem setup
@@ -39,7 +40,26 @@ for method in method_string
         local vel_num, pos_num, times = launch_from_comet_1ord(initial_vel, initial_pos, tspan, beta, method, adaptive=true, abstol=abstol, reltol=reltol)
     end
 
+#methoden die abbrechen funktionieren nicht mit nlasttimesteps logik
+if last_N_timesteps != 0
+    if length(times) < (tspan[2]/stepsize)
+        println("skipped")
+        continue
+    end
+end
+
+println("not skipped")
     local last_N_timesteps = last_N_timesteps_outside #damit nicht vom ersten
+
+    #methoden die abbrechen funktionieren nicht mit nlasttimesteps logik
+    if last_N_timesteps != 0
+        if length(times) < (tspan[2]/stepsize)
+            println("skipped")
+            continue
+        end
+    end
+    
+    println("not skipped")
 
     # Check if last_N_timesteps is 0, if so, use the full length of times
     last_N_timesteps = last_N_timesteps == 0 ? length(times) : last_N_timesteps
@@ -87,3 +107,4 @@ axislegend()
 
 # Save the plot
 save("error_plots/1ode_$(comet_name)_tol$(reltol)_days_periods$(periods)_methods_$(methods_used).png", f)
+GC.gc()
