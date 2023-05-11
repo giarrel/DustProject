@@ -17,10 +17,10 @@ method_string = [
 ]
 
 beta=0
-abstol=1e-10
-reltol=1e-10
+abstol=1e-15
+reltol=1e-15
 periods=10000
-last_N_timesteps_outside = 50000 #0 for all
+last_N_timesteps_outside = 5000 #0 for all
 
 comet_name = "Phaethon" #Phaethon , Arend , Tuttle
 # Initial conditions and problem setup
@@ -40,20 +40,11 @@ for method in method_string
         local vel_num, pos_num, times = launch_from_comet_1ord(initial_vel, initial_pos, tspan, beta, method, adaptive=true, abstol=abstol, reltol=reltol)
     end
 
-#methoden die abbrechen funktionieren nicht mit nlasttimesteps logik
-if last_N_timesteps != 0
-    if length(times) < (tspan[2]/stepsize)
-        println("skipped")
-        continue
-    end
-end
-
-println("not skipped")
     local last_N_timesteps = last_N_timesteps_outside #damit nicht vom ersten
 
     #methoden die abbrechen funktionieren nicht mit nlasttimesteps logik
     if last_N_timesteps != 0
-        if length(times) < (tspan[2]/stepsize)
+        if times[end] < tspan[end]
             println("skipped")
             continue
         end
