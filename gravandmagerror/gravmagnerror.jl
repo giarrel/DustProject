@@ -7,16 +7,16 @@ const day = 24.0 * 60.0 * 60.0
 const yr = 3.154e7
 beta = 0
 qm = 1
-B = 0.000005
+B = 5e-3
 B_field = [0,0,B]
-tspan = (0.0, 10e4*yr)
+tspan = (0.0, 1.5e2*yr)
 stepsize = 0.01 * day
 
 # Function to compute the analytical solution
 v_anal(r) = qm * r * B/2 + sqrt((qm*B*r)^2 / 4 + GM / r)
 
 # Initial conditions
-initial_pos = [AU,0,0]
+initial_pos = [10AU,0,0]
 initial_vel = [0, v_anal(norm(initial_pos)), 0]
 u0 = vcat(initial_pos, initial_vel)
 
@@ -29,11 +29,11 @@ function orbit_ode!(du, u, p, t)
 end
 
 method_string = [
-#    Euler(),
-#    Midpoint(),
-#    ImplicitEuler(),
-#    ImplicitMidpoint(),
-#    Trapezoid(),
+    Euler(),
+    Midpoint(),
+    ImplicitEuler(),
+    ImplicitMidpoint(),
+    Trapezoid(),
     RK4(),
 ]
 
@@ -54,7 +54,7 @@ for method in method_string
 
     local times = sol.t
 
-    local rel_err = [abs(v_num[i]-v_anal(r_numeric[i]))/v_anal(r_numeric[i]) for i in 1:length(times)]
+    local rel_err = [abs(r_numeric[i]-norm(initial_pos))/norm(initial_pos) for i in 1:length(times)]
 
     # Method name for labels
     local method_label = split(split(string(method), '{')[1], '(')[1]
@@ -71,21 +71,21 @@ methods_used = chop(methods_used)
 
 # Figure
 f = Figure()
-Axis(f[1, 1];yscale=log10,title = "Grav_mag_err_stepsize=$(stepsize/day) days", xlabel="Time [y]", ylabel="Velocity error relative [%]")
+Axis(f[1, 1];yscale=log10,title = "Grav_mag_err_stepsize=$(stepsize/day) days B= $(B), R=$(norm(initial_pos)/AU)AU", xlabel="Time [y]", ylabel="Radius error relative [%]")
 
 for (method_label, (error, times, comp_time)) in results_dict
     # Filter out the values that are too small for the log plot
-    local valid_indices = filter(i -> error[i] > 0, 1:length(error))
+    local valid_indices = filter(i -> (1e2 > error[i] > 0), 1:length(error))
 
     # Use only valid indices for plotting
     local filtered_error = error[valid_indices]
     local filtered_times = times[valid_indices] /day/365
 
-    scatter!(filtered_times, filtered_error, label="$(method_label) ($(comp_time) s)")
+    lines!(filtered_times, filtered_error, label="$(method_label) ($(comp_time) s)")
 end
 
 axislegend()
 
 # Save the plot
-save("gravmagplots/Grav_mag_err_yr$(tspan[2]/yr)_stepsize$(stepsize/day)_days_methods_$(methods_used).png", f)
+save("error_plots/Grav_mag(B$(B))(R$(norm(initial_pos)/AU))_err_yr$(tspan[2]/yr)_stepsize$(stepsize/day)_days_methods_$(methods_used).png", f)
 GC.gc()
