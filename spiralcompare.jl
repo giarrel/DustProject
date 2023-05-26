@@ -34,9 +34,23 @@ function magnetic_field(r_vec)
     return [B_x, B_y, B_z]
 end
 
+# Funktion zum Hinzufügen der analytischen Parker-Spirale zum 3D-Plot
+function add_parker_spiral_to_plot!(plt)
+    rmin = 1.0 * Rsun  # inner radius, [m]
+    rmax = 5.3 * AU    # outer radius, [m]
+
+    r, φ = parker_spiral_2d(rmin, rmax)
+    X = r .* cos.(φ) ./ AU
+    Y = r .* sin.(φ) ./ AU
+    Z = zeros(length(r))
+
+    plot!(plt, X, Y, Z, label="Analytical Parker Spiral", color=:green, lw=2)
+end
+
+# Erstellen Sie den 3D-Plot
 #magn field lines calculated and plotted from field
 
-plot3d(xlims=(-100,100),ylims=(-100,100),zlims=(-100,100),size=(800,800,800))
+plot3d(xlims=(-1,1),ylims=(-1,1),size=(800,800,800))
 scatter3d!([0,0,0],[0,0,0],[0,0,0],label="sun", color=:yellow)
 
 function ode_system(du,u,p,t)
@@ -57,45 +71,14 @@ function magn_field_line(u0, tspan, θ , φ) #need to solve g' = F(g) siehe http
     zlabel!("AU")
 end
 
-timespan=(0.0,1e16)
+timespan=(0.0,1e15)
 θ , φ = π/2 , 0                            #θ 0 bis pi, φ 0 bis 2pi
 startpoint= 2.5*Rsun .* [sin(θ)*cos(φ),sin(θ)*sin(φ),cos(θ)]
 
 magn_field_line(startpoint,timespan,θ,φ)
 
+# Fügen Sie die analytische Parker-Spirale hinzu
+add_parker_spiral_to_plot!(plt)
 
-
-
-
-
-
-
-
-#=
-#first approach using quiver maybee need later to see how i created a grid
-
-#using CairoMakie
-
-xmin, xmax = -10*AU, 10*AU
-ymin, ymax = -10*AU, 10*AU
-
-# Erstellen eines Gitters von Koordinaten im Raum, mit entsprechenen magnetfeld werten
-xgrid, ygrid = range(xmin, xmax, length=20), range(ymin, ymax, length=20)
-
-grid=[[x,y] for x in xgrid for y in ygrid] #vektor länge lenth *length mit einträgen [x,y] aus allen x y kombinationen möglichkeiten
-X,Y = getindex.(grid, 1),getindex.(grid, 2) #erste einträge von vektor in vektor, zweite einträge von vektor in vektor
-
-B = [1e9*magnetic_field([x,y,0],1/2)[1:2] for x in xgrid for y in ygrid]#analog zu grid
-Bx,By=getindex.(B, 1),getindex.(B, 2)#analog zu X,Y
-
-
-#f(x,y)=Point2f(magnetic_field([x,y,0])[1:2])
-#norm(f(10*AU,0))
-
-plot(size=(400,400),xlims=(-10,10),ylims=(-10,10),title = "Parker Spiral z=0")
-quiver!(X/AU,Y/AU,quiver=(Bx,By)) #plot(X/AU,Y/AU) mit pfeilen (Bx,By)  (geht nur 2d)
-xlabel!("AU")
-ylabel!("AU")
-#p=streamplot(f,xmin..xmax,ymin..ymax)
-#display(p)
-=#
+# Zeigen Sie den Plot an
+display(plt)

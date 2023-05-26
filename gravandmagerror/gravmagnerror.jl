@@ -7,17 +7,19 @@ const day = 24.0 * 60.0 * 60.0
 const yr = 3.154e7
 beta = 0
 qm = 1
-B = 5e-3
+B = 5e-6
 B_field = [0,0,B]
-tspan = (0.0, 1.5e2*yr)
-stepsize = 0.01 * day
+tspan = (0.0, 300yr)
+stepsize = 0.1 * day
 
 # Function to compute the analytical solution
 v_anal(r) = qm * r * B/2 + sqrt((qm*B*r)^2 / 4 + GM / r)
+pos_anal(t,r) = r*[cos(v_anal(r)/r*t),sin(v_anal(r)/r*t),0]
 
 # Initial conditions
-initial_pos = [10AU,0,0]
-initial_vel = [0, v_anal(norm(initial_pos)), 0]
+initial_pos = [80AU,0,0]
+radius = norm(initial_pos)
+initial_vel = [0, v_anal(radius), 0]
 u0 = vcat(initial_pos, initial_vel)
 
 # Define the ODE system
@@ -29,12 +31,8 @@ function orbit_ode!(du, u, p, t)
 end
 
 method_string = [
-    Euler(),
-    Midpoint(),
-    ImplicitEuler(),
-    ImplicitMidpoint(),
-    Trapezoid(),
-    RK4(),
+   
+    Vern9(),RK4()
 ]
 
 # Initialize a dictionary to store errors, times, and computation times for each method
@@ -49,12 +47,15 @@ for method in method_string
         local sol = solve(prob, method, adaptive=false, dt=stepsize)
     end
 
-    local r_numeric = [norm(u[1:3]) for u in sol.u]
-    local v_num = [norm(u[4:6]) for u in sol.u]
+    local pos_numeric = [u[1:3] for u in sol.u]
 
     local times = sol.t
 
-    local rel_err = [abs(r_numeric[i]-norm(initial_pos))/norm(initial_pos) for i in 1:length(times)]
+    local rel_err_x = [abs((pos_anal(times[i],radius)[1] - pos_numeric[i][1])/pos_anal(times[i],radius)[1]) for i in 1:length(times)]
+    local rel_err_y = [abs((pos_anal(times[i],radius)[2] - pos_numeric[i][2])/pos_anal(times[i],radius)[2]) for i in 1:length(times)]
+    local rel_err_z = [abs(pos_anal(times[i],radius)[3] - pos_numeric[i][3]) / (abs(pos_anal(times[i],radius)[3]) + eps()) for i in 1:length(times)] #eps um zu vermeiden durch 0 teilen
+    local rel_err = [norm([rel_err_x[i], rel_err_y[i], rel_err_z[i]]) for i in 1:length(times)]
+
 
     # Method name for labels
     local method_label = split(split(string(method), '{')[1], '(')[1]
@@ -71,11 +72,11 @@ methods_used = chop(methods_used)
 
 # Figure
 f = Figure()
-Axis(f[1, 1];yscale=log10,title = "Grav_mag_err_stepsize=$(stepsize/day) days B= $(B), R=$(norm(initial_pos)/AU)AU", xlabel="Time [y]", ylabel="Radius error relative [%]")
+Axis(f[1, 1];yscale=log10,title = "Grav_mag_err_stepsize=$(stepsize/day) days B= $(B), R=$(norm(initial_pos)/AU)AU", xlabel="Time [y]", ylabel="position error relative [%]")
 
 for (method_label, (error, times, comp_time)) in results_dict
     # Filter out the values that are too small for the log plot
-    local valid_indices = filter(i -> (1e2 > error[i] > 0), 1:length(error))
+    local valid_indices = filter(i -> (Inf > error[i] > 0), 1:length(error))
 
     # Use only valid indices for plotting
     local filtered_error = error[valid_indices]

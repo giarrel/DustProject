@@ -30,7 +30,7 @@ function charged_particle!(du, u, p, t)
 end
 
 # Zeitbereich
-tspan = (0.0, 15000yr)
+tspan = (0.0, 200yr)
 
 # Analytische Lösung
 x_analytic(t) = x0[1] .+ v0[1]/w*sin.(w*t) .- v0[2]/w*(1 .- cos.(w*t))
@@ -39,10 +39,15 @@ z_analytic(t) = x0[3] .+ v0[3]*t
 
 
 # Liste der Methoden
-methods_list = [RK4()]
+methods_list = [Euler(),
+Midpoint(),
+ImplicitEuler(),
+ImplicitMidpoint(),
+Trapezoid(),
+RK4()]
 
 # Anzahl der letzten Zeitschritte, die berücksichtigt werden sollen
-last_N_timesteps_outside = 500000
+last_N_timesteps_outside = 00000
 
 # Schrittgröße
 stepsize = 0.1day
@@ -91,7 +96,7 @@ ax = Axis(f[1, 1], yscale=log10, title = "magnetic error, stepsize=$(stepsize/da
 
 for (method_label, (times, error, comp_time)) in results_dict
     # Filter out the values that are too small for the log plot
-    valid_indices = filter(i -> error[i] > 0, 1:length(error))
+    valid_indices = filter(i -> error[i] > 1e-18, 1:length(error))
 
     # Use only valid indices for plotting
     filtered_error = error[valid_indices]
@@ -103,4 +108,4 @@ end
 axislegend(ax)
 
 # Save the plot
-save("error_plots/magnetic_error_stepsize$(stepsize/day)_days_inttime_$(tspan[2]/yr)yr_methods_$(methods_used).png",f)
+save("error_plots/magnetic_error_B$(B)_stepsize$(stepsize/day)_days_inttime_$(tspan[2]/yr)yr_methods_$(methods_used).png",f)
