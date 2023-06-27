@@ -8,14 +8,14 @@ include("constants.jl")
 
 #method
 method_string = [
-    #RK/single step methods
+    #=RK/single step methods
     Euler(),
     Midpoint(),
     ImplicitEuler(),
     ImplicitMidpoint(),
     Trapezoid(),
     RK4(),
-#
+=#
 
     #Adams/multistep methods
 #    AB3(),
@@ -23,16 +23,16 @@ method_string = [
 #    AB5(),
 #    ABM32(),
 #    ABM43(),
-#    ABM54()
+    ABM54()
 #
 
 ]
 
 
 beta=0
-stepsize=0.1day
-periods = 10000
-last_N_timesteps_outside = 50000 #put 0 for all
+stepsize=0.01day
+periods = 150
+last_N_timesteps_outside = 0000 #put 0 for all
 
 comet_name = "Phaethon" 
 
@@ -92,7 +92,7 @@ end
 methods_used = chop(methods_used)
 
 f = Figure()
-Axis(f[1, 1];yscale=log10,title = "1nd Order stepsize=$(stepsize/day) days", xlabel="Time [y]", ylabel="Error relative [%]")
+Axis(f[1, 1];yscale=log10,title = "1nd Order ODE stepsize=$(stepsize/day) days", xlabel="Time [y]", ylabel="Error relative [%]")
 
 for (method_label, (error, times, comp_time, comp_time2)) in results_dict
     # Filter out the values that are too small for the log plot
@@ -102,7 +102,7 @@ for (method_label, (error, times, comp_time, comp_time2)) in results_dict
     filtered_error = error[valid_indices]
     filtered_times = times[valid_indices] /day/365
 
-    lines!(filtered_times, filtered_error, label="$(method_label) ($(comp_time)+$(comp_time2) s)")
+    lines!(filtered_times, filtered_error, label="$(method_label) ($(comp_time)s)")
 end
 
 axislegend()

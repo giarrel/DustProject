@@ -7,17 +7,17 @@ const day = 24.0 * 60.0 * 60.0
 const yr = 3.154e7
 beta = 0
 qm = 1
-B = 5e-6
+B = 1e-6
 B_field = [0,0,B]
-tspan = (0.0, 300yr)
-stepsize = 0.1 * day
+tspan = (0.0, 200yr)
+stepsize = 0.01 * day
 
 # Function to compute the analytical solution
 v_anal(r) = qm * r * B/2 + sqrt((qm*B*r)^2 / 4 + GM / r)
 pos_anal(t,r) = r*[cos(v_anal(r)/r*t),sin(v_anal(r)/r*t),0]
 
 # Initial conditions
-initial_pos = [80AU,0,0]
+initial_pos = [AU,0,0]
 radius = norm(initial_pos)
 initial_vel = [0, v_anal(radius), 0]
 u0 = vcat(initial_pos, initial_vel)
@@ -31,8 +31,13 @@ function orbit_ode!(du, u, p, t)
 end
 
 method_string = [
-   
-    Vern9(),RK4()
+    Euler(),
+    Midpoint(),
+    ImplicitEuler(),
+    ImplicitMidpoint(),
+    Trapezoid(),
+    RK4(),
+    Vern9()
 ]
 
 # Initialize a dictionary to store errors, times, and computation times for each method

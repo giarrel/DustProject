@@ -10,14 +10,14 @@ include("constants.jl")
 method_string = [
     SymplecticEuler(),
     VelocityVerlet(),
-#    VerletLeapfrog(),
+    VerletLeapfrog(),
 #    SofSpa10()
 ]
 
 beta=0
-stepsize=0.05day
-periods=10000
-last_N_timesteps_outside = 50000 #put 0 for all
+stepsize=0.01day
+periods=200
+last_N_timesteps_outside = 0000 #put 0 for all
 
 comet_name = "Phaethon" #Phaethon , Arend , Tuttle
 
