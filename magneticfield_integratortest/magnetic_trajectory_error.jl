@@ -8,7 +8,7 @@ const day = 24.0 * 60.0 * 60.0::Float64                 # 1d [s]
 
 # Parameter definieren
 q = 1.0
-B = 5e-9
+B = 1e-5
 m = 1.0
 w = q*B/m
 
