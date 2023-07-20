@@ -41,7 +41,7 @@ p = plot()
 
 for i in axes(u0)[2]
     local prob = ODEProblem(trajectory_ode, u0[1:6,i], tspan, para, callback=cb)
-    local sol = solve(prob, Vern9(), adaptive=false, dt=0.01day)
+    local sol = solve(prob, RK4(), adaptive=false, dt=0.01day)
 
     # Extract the results
     local x_pos_numeric = [point[1] for point in sol.u]
@@ -74,7 +74,7 @@ for i in axes(u0)[2]
     plot!(p, distances_log, energy_errors_log, legend = false)
 end
 
-title!(p, "Log-Log plot of absolute energy change error against distance to sun")
+title!(p, "Log-Log plot of relative energy change error")
 xlabel!(p, "Log of distance to sun (m)")
 ylabel!(p, "Log of absolute energy change error")
 
