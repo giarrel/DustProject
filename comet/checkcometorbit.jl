@@ -38,4 +38,4 @@ for comet_name in keys(comets)
     println("Perihelion distance distance (from conversion vs sbdb): ", perihelion / AU, " AU vs ", perisbdb / AU, " AU with rel error ", (perihelion - perisbdb) / perisbdb, "%")
     println("------------------")
 end
-println("-----------------")
+println("----------------")
