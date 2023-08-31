@@ -3,7 +3,7 @@ using LinearAlgebra
 include("constants.jl")
 
 
-function startparams(no_of_starts,vd,beta)
+function startparams_beta(no_of_starts,vd,beta)
 
     
     l,b  = (deg2rad(0),deg2rad(0))

@@ -6,4 +6,5 @@ const day = 24.0 * 60.0 * 60.0::Float64                 # 1d [s]
 const sol_day = 25day
 const km = 1e3
 const s = 1
-const v_sol_cs = 100km/s
+const v_sol_cs = -100km/s
+const eps_0 = 8.8541878128e-12

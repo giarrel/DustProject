@@ -1,7 +1,7 @@
 using DifferentialEquations
 using LinearAlgebra
 using Plots
-using PlotlyJS
+#using PlotlyJS
 
 include("constants.jl")
 include("duststartforbeta.jl")
