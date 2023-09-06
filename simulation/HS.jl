@@ -114,7 +114,7 @@ for beta in beta_params
 
     # Positionen plotten
     lines!(ax,label= string.(m), Float32.(sol[1,:])/AU, Float32.(sol[2,:])/AU, Float32.(sol[3,:])/AU, linewidth = 1)
-    lines!(ax2,label= "m=$(m)kg ,r=$(r_dust)m ,v_y=$(u0[5])km/s ,v_z=$(u0[6])km/s ,start delay= $(tstart/day)days, integrtaiontime=$((tspan[2]-tspan[1])/day)days",  Float32.(sol[2,:])/AU, Float32.(sol[3,:])/AU, linewidth = 1)
+    lines!(ax2,label= "m=$(m)kg ,r=$(r_dust)m ,v_y=$(u0[5]/km)km/s ,v_z=$(u0[6]/km)km/s ,start delay= $(tstart/day)days, integrtaiontime=$((tspan[2]-tspan[1])/day)days",  Float32.(sol[2,:])/AU, Float32.(sol[3,:])/AU, linewidth = 1)
     
 end
 end

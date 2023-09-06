@@ -8,3 +8,4 @@ const km = 1e3
 const s = 1
 const v_sol_cs = -100km/s
 const eps_0 = 8.8541878128e-12
+const v_sol = -400km/s
