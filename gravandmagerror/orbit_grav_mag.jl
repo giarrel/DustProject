@@ -7,7 +7,7 @@ const day = 24.0 * 60.0 * 60.0
 const yr = 3.154e7
 beta = 0
 qm = 1
-B = e-6
+B = 1e-6
 B_field = [0,0,B]
 tspan = (0.0, 10yr)
 stepsize = 0.01 * day
@@ -30,7 +30,7 @@ end
 
 # Solve the ODE system
 prob = ODEProblem(orbit_ode!, u0, tspan, (beta, GM))
-sol = solve(prob, Trapezoid(), adaptive=false, dt=stepsize)
+sol = solve(prob, Vern9(), adaptive=false, dt=stepsize)
 
 # Extract the position components
 x_pos_numeric = [u[1] for u in sol.u]
@@ -42,5 +42,5 @@ y_vel_numeric = [point[5] for point in sol.u]
 z_vel_numeric = [point[6] for point in sol.u]
 
 # Plot the results
-figure = lines(x_pos_numeric/AU,y_pos_numeric/AU)
-save("comet_plots/circular_orbit_magn_grav_B$(B)_R$(norm(initial_pos)/AU)_t$(tspan[2])).png", figure)
+fig = lines(x_pos_numeric/AU,y_pos_numeric/AU)
+fig

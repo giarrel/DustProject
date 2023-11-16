@@ -30,9 +30,9 @@ function plot_comet_orbit(comet_name)
     axislegend(ax)
 
     # Save the plot
-    save("comet_plots/$(comet_name)_orbit.png", fig)
+    save("DustProject/comet_plots/$(comet_name)_orbit.pdf", fig)
 
-    println("Plot saved as 'comet_plots/$(comet_name)_orbit.png'")
+    println("Plot saved as 'comet_plots/$(comet_name)_orbit.pdf'")
 end
 
 # Iterate over all comets and plot their orbits

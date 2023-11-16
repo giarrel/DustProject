@@ -7,10 +7,12 @@ const day = 24.0 * 60.0 * 60.0
 const yr = 3.154e7
 beta = 0
 qm = 1
-B = 1e-6
+B = 1e-5
 B_field = [0,0,B]
 tspan = (0.0, 200yr)
-stepsize = 0.01 * day
+stepsize = 0.1 * day
+reltol=1e-10
+adapt=true
 
 # Function to compute the analytical solution
 v_anal(r) = qm * r * B/2 + sqrt((qm*B*r)^2 / 4 + GM / r)
@@ -32,13 +34,15 @@ end
 
 method_string = [
     Euler(),
-    Midpoint(),
-    ImplicitEuler(),
-    ImplicitMidpoint(),
-    Trapezoid(),
-    RK4(),
-    Vern9()
-]
+
+Midpoint(),
+ImplicitEuler(),
+ImplicitMidpoint(),
+Trapezoid(),
+RK4(),
+Vern9(),
+AutoVern9(Rodas5P())
+    ]
 
 # Initialize a dictionary to store errors, times, and computation times for each method
 results_dict = Dict{String, Tuple{Vector{Float64}, Vector{Float64}, Float64}}()
@@ -49,7 +53,7 @@ for method in method_string
     local comp_time = @elapsed begin
         # Solve the ODE system
         local prob = ODEProblem(orbit_ode!, u0, tspan, (beta, GM))
-        local sol = solve(prob, method, adaptive=false, dt=stepsize)
+        local sol = solve(prob, method, adaptive=adapt, reltol=reltol,dt=stepsize)
     end
 
     local pos_numeric = [u[1:3] for u in sol.u]
@@ -77,7 +81,7 @@ methods_used = chop(methods_used)
 
 # Figure
 f = Figure()
-Axis(f[1, 1];yscale=log10,title = "Grav_mag_err_stepsize=$(stepsize/day) days B= $(B), R=$(norm(initial_pos)/AU)AU", xlabel="Time [y]", ylabel="position error relative [%]")
+Axis(f[1, 1];yscale=log10,title = "gravity and magnetic error, step size = $(stepsize/day) days", xlabel="Time [y]", ylabel="position error relative [%]")
 
 for (method_label, (error, times, comp_time)) in results_dict
     # Filter out the values that are too small for the log plot
@@ -93,5 +97,6 @@ end
 axislegend()
 
 # Save the plot
-save("error_plots/Grav_mag(B$(B))(R$(norm(initial_pos)/AU))_err_yr$(tspan[2]/yr)_stepsize$(stepsize/day)_days_methods_$(methods_used).png", f)
+#save("DustProject/error_plots_ada2/Grav_mag_(B=$(B)T)_(R=$(norm(initial_pos)/AU)AU)_integrationtime$(tspan[2]/yr)yr_reltol$(reltol)days_methods$(methods_used).pdf", f)
+save("DustProject/error_plots_ada/Grav_mag_(B=$(B)T)_(R=$(norm(initial_pos)/AU)AU)_integrationtime$(tspan[2]/yr)yr_stepsize$(stepsize/day)days_methods$(methods_used).pdf", f)
 GC.gc()

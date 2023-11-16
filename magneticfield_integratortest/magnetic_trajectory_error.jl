@@ -32,25 +32,50 @@ end
 # Zeitbereich
 tspan = (0.0, 200yr)
 
-# Analytische Lösung
+# Analytische Lösung https://suli.pppl.gov/2018/course/Fox_SULI_2018.pdf
+
+x_analytic(t) = v0[1]/w*sin.(w*t)
+y_analytic(t) = v0[1]/w*(1 .- cos.(w*t))
+z_analytic(t) = v0[3]*t
+
+#=
 x_analytic(t) = x0[1] .+ v0[1]/w*sin.(w*t) .- v0[2]/w*(1 .- cos.(w*t))
 y_analytic(t) = x0[2] .+ v0[2]/w*sin.(w*t) .+ v0[1]/w*(1 .- cos.(w*t))
 z_analytic(t) = x0[3] .+ v0[3]*t
+=#
 
+# Liste der Metho
+methods_list = [
+#=
+Euler(),
 
-# Liste der Methoden
-methods_list = [Euler(),
 Midpoint(),
 ImplicitEuler(),
 ImplicitMidpoint(),
 Trapezoid(),
-RK4()]
+RK4(),
+Vern9(),
+AutoVern9(Rodas5P())=#
+
+    #=Adams/multistep methods
+    AB3(),
+    AB4(),
+    AB5(),
+    ABM32(),
+    ABM43(),=#
+    ABM54()
+#
+
+    ]
+    
 
 # Anzahl der letzten Zeitschritte, die berücksichtigt werden sollen
 last_N_timesteps_outside = 00000
 
 # Schrittgröße
-stepsize = 0.1day
+stepsize = 0.05day
+adap=false
+reltol=1e-13
 
 # Wörterbuch zur Speicherung der Ergebnisse
 results_dict = Dict{String, Tuple{Vector{Float64}, Vector{Float64}, Float64}}()
@@ -64,7 +89,7 @@ prob = ODEProblem(charged_particle!, u0, tspan)
 # Lösung für jede Methode
 for method in methods_list
     local comp_time = @elapsed begin
-        sol = solve(prob, method, dt=stepsize, adaptive=false)
+        sol = solve(prob, method, dt=stepsize, adaptive=adap,reltol=reltol)
         error_x = abs.((x_analytic(sol.t) .- sol[1,:]) ./ x_analytic(sol.t))
         error_y = abs.((y_analytic(sol.t) .- sol[2,:]) ./ y_analytic(sol.t))
         error_z = abs.((z_analytic(sol.t) .- sol[3,:]) ./ z_analytic(sol.t))
@@ -92,7 +117,12 @@ methods_used = chop(methods_used)
 
 # Fehler für jeden Zeitschritt plotten
 f = Figure()
-ax = Axis(f[1, 1], yscale=log10, title = "magnetic error, stepsize=$(stepsize/day) days", xlabel="Time [y]", ylabel="Error relative [%]")
+if adap == false
+    ax = Axis(f[1, 1], yscale=log10, title = "magnetic error, step size = $(stepsize/day) days", xlabel="Time [y]", ylabel="Error relative [%]")
+else
+    ax = Axis(f[1, 1], yscale=log10, title = "magnetic error, reltol = $(reltol)", xlabel="Time [y]", ylabel="Error relative [%]")
+end
+
 
 for (method_label, (times, error, comp_time)) in results_dict
     # Filter out the values that are too small for the log plot
@@ -108,4 +138,8 @@ end
 axislegend(ax)
 
 # Save the plot
-save("error_plots/magnetic_error_B$(B)_stepsize$(stepsize/day)_days_inttime_$(tspan[2]/yr)yr_methods_$(methods_used).png",f)
+if adap == false
+    save("DustProject/error_plots_new/magnetic_error_B$(B)_stepsize$(stepsize/day)_days_inttime_$(tspan[2]/yr)yr_methods_$(methods_used).pdf",f)
+else
+    save("DustProject/error_plots_ada2/magnetic_error_B$(B)_reltol$(reltol)_days_inttime_$(tspan[2]/yr)yr_methods_$(methods_used).pdf",f)
+end

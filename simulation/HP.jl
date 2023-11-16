@@ -6,10 +6,10 @@ include("duststartHS.jl")
 Bfield_strength_after=6.0e-10
 Bfield_strength_before=1.5e-10
 
-random_turn_param=rand()*2pi
-rot_mat = [ cos(random_turn_param) -sin(random_turn_param) 0
-            sin(random_turn_param) cos(random_turn_param)   0
-            0 0 1]
+random_turn_param=0.1*2pi
+rot_mat = [ cos(random_turn_param) 0 -sin(random_turn_param)
+            0                      1        0
+            sin(random_turn_param) 0 cos(random_turn_param)]
 
 B_direction_inside=[1,0,0]
 B_direction_outside=*(rot_mat,B_direction_inside)
@@ -19,49 +19,57 @@ function B_field(y_travel)
     y_travel_adjust=y_travel+100AU
     B=-(Bfield_strength_after-Bfield_strength_before)*tanh(100*y_travel_adjust)/2-(Bfield_strength_after-Bfield_strength_before)/2+Bfield_strength_after
 
-    if y_travel<100AU
+    if y_travel>-100AU
         return B.*B_direction_inside
     else
         return B.*B_direction_outside
     end
 end
 
-B_field(101AU)
+B_field(-101AU)
+B_field(-99AU)
+B_field(50AU)
 
 function lorenza(q,m,v,y_travel)
-    y_travel_v_jump=y_travel+100AU
-    v_sol_jump = v_sol_cs*tanh(100*y_travel_v_jump)/2+v_sol_cs/2
-    return -q/m*cross((v-[0,v_sol_jump,0]),B_field(y_travel))
+    phi=pi/2
+    if y_travel > -100AU
+        if y_travel < -90AU
+            y_travel_after100=y_travel+100AU
+            phi = y_travel_after100/10AU*pi/2
+            v_sol_turn=-100km/s.*[cos(phi),sin(phi),0]
+        else
+            v_sol_turn=-100km/s.*[0,1,0]
+        end
+    else
+        v_sol_turn=[0,0,0]
+    end
+    
+    return -q/m*cross((v-v_sol_turn),B_field(y_travel))#-[0,v_sol_jump,0] relativgeschwindigkeit nur innen HP, TODO:man kann als was wäre sich anschauen was wenn ausserhalb eingefrohren beide seiten parallel zum hp aber nicht unbedingt parallel zueinander
 end
 
 
 beta_params = [0]
 r_dust_params=[1e-6]
-m_dust_params=[1e-13,1e-14,1e-15]
+m_dust_params=[1e-14,1e-15,1e-16]
+#r_dust_params=[1e-7]
+#m_dust_params=[1e-17,1e-18,1e-19]
+#r_dust_params=[1e-8]
+#m_dust_params=[1e-20,1e-21,1e-22]
 #r_dust_params=[1e-9]
-#m_dust_params=[1e-21]#,1e-22,1e-23
-no_of_starts = 2
-randomnesscale = 2#km/s
+#m_dust_params=[1e-22,1e-23,1e-24]
 
-lorenza(5*4*pi*eps_0*1e-6,1e-15,[0,26*km/s,0],-81AU)*426/126/3
+
+
 # Anfangsbedingungen
-v0 = [0,26,0]* km/s # [vx(0), vy(0), vz(0)][0,26,0]* km/s
-x0 = [0, -81AU, 0.0] # [x(0), y(0), z(0)]
+v0 = [0,26,0]* km/s # [vx(0), vy(0), vz(0)] TODO: RICHTUNG WIE DAS TEILCHEN REINFLIEGT
+x0 = [0, -101AU, 0.0] # [x(0), y(0), z(0)]
 startlocvels = [vcat(x0, v0)]
 
-#=
-for i in 1:no_of_starts
-    local v_0 = [0,26+(rand()-0.5)*randomnesscale,(rand()-0.5)*randomnesscale]* km/s 
-    local x_0 = [0, AU, 0.0]
-    push!(startlocvels,vcat(x_0, v_0))
-
-end
-=#
 
 
 fig = Figure(resolution = (1.1*1920,1.1*1080))
-ax = Axis3(fig[1, 1], xlabel = "AU", ylabel = "AU", zlabel = "AU" ,title = "3d")
-ax2 = Axis(fig[1, 2], xlabel = "AU", ylabel = "AU", title = "2d")
+ax = Axis3(fig[1, 1], xlabel = "AU", ylabel = "AU", zlabel = "AU" ,title = "HP dust trajectory with magnetic field turn ed by $(random_turn_param/pi)pi 3d")
+ax2 = Axis(fig[1, 2], xlabel = "AU", ylabel = "AU", title = "HP dust trajectory with magnetic field turn ed by $(random_turn_param/pi)pi 2d")
 
 for u0 in startlocvels
 for m in m_dust_params
@@ -85,11 +93,11 @@ for beta in beta_params
 
     # Problem und Lösung
     local prob = ODEProblem(charged_particle!, u0, tspan)
-    local sol = solve(prob,AutoVern9(Rodas5P()),dt=0.001*day,adaptive=true,reltol=1e-20)
+    local sol = solve(prob,Vern9(),dt=0.001*day,adaptive=true,reltol=1e-20)
 
     # Positionen plotten
     lines!(ax,label= string.(m), Float32.(sol[1,:])/AU, Float32.(sol[2,:])/AU, Float32.(sol[3,:])/AU, linewidth = 1)
-    lines!(ax2,label= "m=$(m)kg ,r=$(r_dust)m ,v_y=$(u0[5]/km)km/s ,v_z=$(u0[6]/km)km/s , integrtaiontime=$((tspan[2]-tspan[1])/day)days",  Float32.(sol[2,:])/AU, Float32.(sol[3,:])/AU, linewidth = 1)
+    lines!(ax2,label= "m=$(m)kg ,r=$(r_dust)m ,v_y=$(u0[5]/km)km/s ,v_z=$(u0[6]/km)km/s , integrtaiontime=$((tspan[2]-tspan[1])/day)days, q/m=$(round(q/m,digits=3))c/kg, turnparam_$(random_turn_param/2pi)2pi",  Float32.(sol[2,:])/AU, Float32.(sol[3,:])/AU, linewidth = 1)
     
 end
 end
@@ -98,3 +106,5 @@ end
 
 axislegend()
 fig
+save("C:\\Users\\lucac\\dustproject_clone\\DustProject\\HPplots\\HP_startloc_$(x0/AU)_size_$(r_dust_params)_turnparam_$(random_turn_param/pi)pi.png",fig)
+GC.gc()

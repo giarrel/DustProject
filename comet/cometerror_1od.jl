@@ -15,14 +15,15 @@ method_string = [
     ImplicitMidpoint(),
     Trapezoid(),
     RK4(),
-=#
+    Vern9()=#
 
-    #Adams/multistep methods
-#    AB3(),
-#    AB4(),
-#    AB5(),
-#    ABM32(),
-#    ABM43(),
+
+    #=Adams/multistep methods
+    AB3(),
+    AB4(),
+    AB5(),
+    ABM32(),
+    ABM43(),=#
     ABM54()
 #
 
@@ -30,9 +31,9 @@ method_string = [
 
 
 beta=0
-stepsize=0.01day
-periods = 150
-last_N_timesteps_outside = 0000 #put 0 for all
+stepsize=0.005day
+periods = 1000
+last_N_timesteps_outside = 000 #put 0 for all
 
 comet_name = "Phaethon" 
 
@@ -81,6 +82,7 @@ for method in method_string
     local error = [norm([error_x[i], error_y[i], error_z[i]]) for i in 1:last_N_timesteps]
     local method_label = split(split(string(method), '{')[1], '(')[1]
 
+    println(size(times[end-last_N_timesteps+1:end]))
     # Store the errors, times, and computation time for the current method
     results_dict[method_label] = (error, times[end-last_N_timesteps+1:end], comp_time, comp_time2)
 
@@ -92,7 +94,7 @@ end
 methods_used = chop(methods_used)
 
 f = Figure()
-Axis(f[1, 1];yscale=log10,title = "1nd Order ODE stepsize=$(stepsize/day) days", xlabel="Time [y]", ylabel="Error relative [%]")
+Axis(f[1, 1];yscale=log10,title = "1st Order ODE step size = $(stepsize/day) days", xlabel="Time [y]", ylabel="Error relative [%]")
 
 for (method_label, (error, times, comp_time, comp_time2)) in results_dict
     # Filter out the values that are too small for the log plot
@@ -108,5 +110,5 @@ end
 axislegend()
 
 # Save the plot
-save("error_plots/1ode_$(comet_name)_stepsize$(stepsize/day)_days_periods$(periods)_methods_$(methods_used).png", f)
+save("DustProject/error_plots_newnew/1ode_$(comet_name)_stepsize$(stepsize/day)_days_periods$(periods)_methods_$(methods_used).pdf", f)
 GC.gc()

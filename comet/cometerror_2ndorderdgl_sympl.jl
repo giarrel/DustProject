@@ -16,7 +16,7 @@ method_string = [
 
 beta=0
 stepsize=0.01day
-periods=200
+periods=150
 last_N_timesteps_outside = 0000 #put 0 for all
 
 comet_name = "Phaethon" #Phaethon , Arend , Tuttle
@@ -75,7 +75,7 @@ methods_used = chop(methods_used)
 
 # Create the plot
 f = Figure()
-Axis(f[1, 1];yscale=log10,title = "symplekt stepsize=$(stepsize/day) days", xlabel="Time [y]", ylabel="Error relative [%]")
+Axis(f[1, 1];yscale=log10,title = "symplectic, step size = $(stepsize/day) days", xlabel="Time [y]", ylabel="Error relative [%]")
 
 
 for (method_label, (error, times, comp_time, comp_time2)) in results_dict
@@ -92,5 +92,5 @@ end
 axislegend()
 
 # Save the plot
-save("error_plots/sympl_$(comet_name)_stepsize$(stepsize/day)_days_periods$(periods)_methods_$(methods_used).png", f)
+save("DustProject/error_plots_newnew/sympl_$(comet_name)_stepsize$(stepsize/day)_days_periods$(periods)_methods_$(methods_used).pdf", f)
 GC.gc()
