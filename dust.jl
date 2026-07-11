@@ -85,7 +85,7 @@ function magnetic_field(r_vec)
     B_theta = 0.0
     
     # Umwandlung zurück in kartesische Koordinaten
-    B_x, = B_r * sin(θ) * cos(φ) + B_theta * cos(θ) * cos(φ) - B_phi * sin(φ)
+    B_x = B_r * sin(θ) * cos(φ) + B_theta * cos(θ) * cos(φ) - B_phi * sin(φ)
     B_y = B_r * sin(θ) * sin(φ) + B_theta * cos(θ) * sin(φ) + B_phi * cos(φ)
     B_z = B_r * cos(θ) - B_theta * sin(θ)
 
